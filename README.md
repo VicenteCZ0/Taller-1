@@ -132,4 +132,4 @@ Configurar CORS para los orígenes permitidos.
 Las contribuciones son bienvenidas. Por favor, siga las pautas de Conventional Commits y utilice Pull Requests para proponer cambios.
 
 Licencia
-Este proyecto está bajo la licencia MIT.
+Este proyecto está bajo la licencia MIT. 
