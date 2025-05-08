@@ -1,13 +1,22 @@
-
+using Microsoft.EntityFrameworkCore;
+using APITaller1.src.data;
 using Serilog;
-Log.Logger = new LoggerConfiguration()
+var builder = WebApplication.CreateBuilder(args);
 
+// Configura Serilog leyendo del archivo appsettings.json (si tienes uno)
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration) // <-- conecta config.json
+    .Enrich.FromLogContext()
     .CreateLogger();
+
+builder.Host.UseSerilog(); // <-- conecta Serilog con ASP.NET Core
 try
 {
     Log.Information("starting server.");
-    var builder = WebApplication.CreateBuilder(args);
+    //var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddControllers();
+        builder.Services.AddDbContext<StoreContext>(options => 
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
     builder.Host.UseSerilog((context, services, configuration) =>
     {
         configuration
@@ -19,6 +28,7 @@ try
     });
 
     var app = builder.Build();
+    DbInitializer.InitDb(app);
     app.MapControllers();
     app.Run();
 }
