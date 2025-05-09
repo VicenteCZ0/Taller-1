@@ -16,67 +16,82 @@ namespace APITaller1.src.Repositories
     public class UserRepository(StoreContext store) : IUserRepository
     {
         private readonly StoreContext _context = store;
-        public async Task CreateUserAsync(User user, ShippingAddres? shippingAddress)
+        public async Task CreateUserAsync(User user, ShippingAddress? shippingAddress)
         {
+            if (shippingAddress != null)
+            {
+                user.ShippingAddress = new List<ShippingAddress> { shippingAddress };
+                shippingAddress.User = user; // importante para mantener la relación
+                await _context.ShippingAddress.AddAsync(shippingAddress);
+            }
+
             await _context.Users.AddAsync(user);
-            if (shippingAddress != null) await _context.ShippingAddres.AddAsync(shippingAddress);   
         }
 
-        public void DeleteUserAsync(User user, ShippingAddres shippingAddress)
+        public void DeleteUserAsync(User user, ShippingAddress shippingAddress)
         {
-            _context.ShippingAddres.Remove(shippingAddress);
+            _context.ShippingAddress.Remove(shippingAddress);
             _context.Users.Remove(user);
         }
         
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
-            var users = await _context.Users.Include(x => x.ShippingAddres).ToListAsync();
+            var users = await _context.Users.Include(x => x.ShippingAddress).ToListAsync();
 
             
             return users.Select(UserMapper.MapToDTO);
         }
 
-        public Task<UserDto> GetUserByIdAsync(string firtsName)
+        public Task<UserDto> GetUserByIdAsync(string firstName)
         {
-            var user = _context.Users.Include(x => x.ShippingAddres).FirstOrDefault(x => x.FirtsName == firtsName) ?? throw new Exception("User not found");
+            var user = _context.Users.Include(x => x.ShippingAddress).FirstOrDefault(x => x.FirstName == firstName) ?? throw new Exception("User not found");
             return Task.FromResult(UserMapper.MapToDTO(user));
         }
 
         public void UpdateShippingAddressAsync(UserDto userDto)
         {
-            var user = _context.Users.Include(x => x.ShippingAddres).FirstOrDefault(x => x.FirtsName == userDto.FirtsName) ?? throw new Exception("User not found");
-            
-            if (user.ShippingAddres == null)
+            var user = _context.Users.Include(x => x.ShippingAddress).FirstOrDefault(x => x.FirstName == userDto.FirstName) 
+                    ?? throw new Exception("User not found");
+
+            var direccion = user.ShippingAddress.FirstOrDefault();
+
+            if (direccion == null)
             {
-                user.ShippingAddres = new ShippingAddres
+                direccion = new ShippingAddress
                 {
                     Street = userDto.Street,
                     Number = userDto.Number,
                     Commune = userDto.Commune,
                     Region = userDto.Region,
-                    PostalCode = userDto.PostalCode
+                    PostalCode = userDto.PostalCode,
+                    User = user // Asigna el usuario para mantener la relación
                 };
+
+                user.ShippingAddress = new List<ShippingAddress> { direccion };
+                _context.ShippingAddress.Add(direccion);
             }
             else
             {
-                user.ShippingAddres.Street = userDto.Street;
-                user.ShippingAddres.Number = userDto.Number;
-                user.ShippingAddres.Commune = userDto.Commune;
-                user.ShippingAddres.Region = userDto.Region;
-                user.ShippingAddres.PostalCode = userDto.PostalCode;
+                direccion.Street = userDto.Street;
+                direccion.Number = userDto.Number;
+                direccion.Commune = userDto.Commune;
+                direccion.Region = userDto.Region;
+                direccion.PostalCode = userDto.PostalCode;
+
+                _context.ShippingAddress.Update(direccion);
             }
-            _context.ShippingAddres.Update(user.ShippingAddres);
+
             _context.Users.Update(user);
         }
-       
+        
 
         public void UpdateUserAsync(User user)
         {
-            var existingUser = _context.Users.FirstOrDefault(x => x.FirtsName == user.FirtsName) ?? throw new Exception("User not found");
+            var existingUser = _context.Users.FirstOrDefault(x => x.FirstName == user.FirstName) ?? throw new Exception("User not found");
             if (existingUser != null)
             {
                 existingUser.LastName = user.LastName;
-                existingUser.Thelephone = user.Thelephone;
+                existingUser.Telephone = user.Telephone;
                 existingUser.Email = user.Email;
                 _context.Users.Update(existingUser);
             }
