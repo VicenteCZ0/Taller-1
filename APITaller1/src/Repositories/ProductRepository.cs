@@ -38,13 +38,15 @@ public class ProductRepository(StoreContext store, ILogger<Product> logger): IPr
 
     public async Task UpdateProductAsync(Product product)
     {
-        var existingProduct = await _context.Products.FindAsync(product.Id) ?? throw new Exception("Product not found");
+        var existingProduct = await _context.Products.FindAsync(product.ProductID) ?? throw new Exception("Product not found");
         existingProduct.Name = product.Name;
         existingProduct.Description = product.Description;
         existingProduct.Price = product.Price;
         existingProduct.Stock = product.Stock;
+        existingProduct.Category = product.Category;
         existingProduct.Urls = product.Urls;
         existingProduct.Brand = product.Brand;
+        existingProduct.StatusID = product.StatusID;
         _context.Products.Update(existingProduct);
     }
 }

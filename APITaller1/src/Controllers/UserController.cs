@@ -31,21 +31,23 @@ namespace APITaller1.src.Controllers
             }
             var user = new User
             {
-                FirtsName = userDto.FirtsName,
+                FirstName = userDto.FirstName,
                 LastName = userDto.LastName,
                 Email = userDto.Email,
                 Password = userDto.Password,
-                Thelephone = userDto.Thelephone,
-                ShippingAddres = new ShippingAddres
-                {
-                    Street = userDto.Street ?? string.Empty,
-                    Number = userDto.Number?? string.Empty,
-                    Commune = userDto.Commune?? string.Empty,
-                    Region = userDto.Region?? string.Empty,
-                    PostalCode = userDto.PostalCode?? string.Empty
+                Telephone = userDto.Telephone,
+                ShippingAddress = new List<ShippingAddress> {
+                    new ShippingAddress
+                    {
+                        Street = userDto.Street ?? string.Empty,
+                        Number = userDto.Number ?? string.Empty,
+                        Commune = userDto.Commune ?? string.Empty,
+                        Region = userDto.Region ?? string.Empty,
+                        PostalCode = userDto.PostalCode ?? string.Empty
+                    }
                 }
             };
-            await _context.UserRepository.CreateUserAsync(user, user.ShippingAddres);
+            await _context.UserRepository.CreateUserAsync(user, user.ShippingAddress.FirstOrDefault());
             await _context.SaveChangeAsync();
             return Ok(user);
         }

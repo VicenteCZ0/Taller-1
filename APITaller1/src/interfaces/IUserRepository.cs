@@ -12,9 +12,9 @@ namespace APITaller1.src.interfaces
     {
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<UserDto> GetUserByIdAsync(string firtsName);
-        Task CreateUserAsync(User user, ShippingAddres? shippingAddress);
+        Task CreateUserAsync(User user, ShippingAddress? shippingAddress);
         void UpdateUserAsync(User user);
         void UpdateShippingAddressAsync(UserDto userDto);
-        void DeleteUserAsync(User user, ShippingAddres shippingAddress);
+        void DeleteUserAsync(User user, ShippingAddress shippingAddress);
     }
 }
