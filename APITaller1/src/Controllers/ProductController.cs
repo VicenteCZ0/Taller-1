@@ -37,6 +37,6 @@ public class ProductController(ILogger<ProductController> logger, UnitOfWork uni
     {
         await _context.ProductRepository.AddProductAsync(product);
         await _context.SaveChangeAsync();
-        return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
+        return CreatedAtAction(nameof(GetById), new { id = product.ProductID }, product);
     }
 }
