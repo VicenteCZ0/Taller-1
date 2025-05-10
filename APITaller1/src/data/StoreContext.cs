@@ -20,12 +20,13 @@ public class StoreContext : DbContext
     public DbSet<Role> Roles { get; set; }
     public DbSet<Status> Status { get; set; }
     public DbSet<ProductImage> ProductImages { get; set; }
+    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+    public DbSet<CartItem> CartItems { get; set; }
 
 /*
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
-    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
-    public DbSet<CartItem> CartItems { get; set; }
+    
     
     
 
