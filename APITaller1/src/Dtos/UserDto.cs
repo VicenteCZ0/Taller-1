@@ -7,10 +7,10 @@ namespace APITaller1.src.Dtos
 {
     public class UserDto
     {
-        public required string FirtsName { get; set; }
+        public required string FirstName { get; set; }
         public required string LastName { get; set; }
         public required string Email { get; set; }
-        public required string Thelephone { get; set; }
+        public required string Telephone { get; set; }
         public required string Street { get; set; }
         public required string Number { get; set; }
         public required string Commune {get; set;}
