@@ -3,6 +3,7 @@ using System;
 using APITaller1.src.data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APITaller1.data.migrations
 {
     [DbContext(typeof(StoreContext))]
-    partial class StoreContextModelSnapshot : ModelSnapshot
+    [Migration("20250509082528_UserAndProductModelsUpdate")]
+    partial class UserAndProductModelsUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -48,6 +51,9 @@ namespace APITaller1.data.migrations
                     b.Property<int>("StatusID")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("StatusID1")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Stock")
                         .HasColumnType("INTEGER");
 
@@ -57,6 +63,8 @@ namespace APITaller1.data.migrations
                     b.HasKey("ProductID");
 
                     b.HasIndex("StatusID");
+
+                    b.HasIndex("StatusID1");
 
                     b.ToTable("Products");
                 });
@@ -192,12 +200,33 @@ namespace APITaller1.data.migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("RoleUser", b =>
+                {
+                    b.Property<int>("RolesRoleID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UsersUserID")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("RolesRoleID", "UsersUserID");
+
+                    b.HasIndex("UsersUserID");
+
+                    b.ToTable("RoleUser");
+                });
+
             modelBuilder.Entity("APITaller1.src.models.Product", b =>
                 {
-                    b.HasOne("APITaller1.src.models.Status", "Status")
+                    b.HasOne("APITaller1.src.models.Status", null)
                         .WithMany()
                         .HasForeignKey("StatusID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("APITaller1.src.models.Status", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusID1")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Status");
@@ -227,23 +256,31 @@ namespace APITaller1.data.migrations
 
             modelBuilder.Entity("APITaller1.src.models.User", b =>
                 {
-                    b.HasOne("APITaller1.src.models.Role", "Role")
-                        .WithMany("Users")
+                    b.HasOne("APITaller1.src.models.Role", null)
+                        .WithMany()
                         .HasForeignKey("RoleID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
 
-                    b.Navigation("Role");
+            modelBuilder.Entity("RoleUser", b =>
+                {
+                    b.HasOne("APITaller1.src.models.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RolesRoleID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("APITaller1.src.models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersUserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("APITaller1.src.models.Product", b =>
                 {
                     b.Navigation("ProductImages");
-                });
-
-            modelBuilder.Entity("APITaller1.src.models.Role", b =>
-                {
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("APITaller1.src.models.User", b =>
