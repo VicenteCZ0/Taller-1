@@ -17,6 +17,7 @@ try
     builder.Services.AddControllers();
         builder.Services.AddDbContext<StoreContext>(options => 
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        //builder.Services.AddScoped<IUserService, UserService>();
     builder.Host.UseSerilog((context, services, configuration) =>
     {
         configuration

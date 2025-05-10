@@ -8,10 +8,108 @@ using Microsoft.EntityFrameworkCore;
 
 namespace APITaller1.src.data;
 
-public class StoreContext(DbContextOptions options) : DbContext(options)
+public class StoreContext : DbContext
 {
-    public required DbSet<Product> Products { get; set; }
-    public required DbSet<User> Users { get; set; }
-    public required DbSet<ShippingAddres> ShippingAddres { get; set; }
+    public StoreContext(DbContextOptions options) : base(options)
+    {
+    }
 
+    public DbSet<Product> Products { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<ShippingAddress> ShippingAddress { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<Status> Status { get; set; }
+    public DbSet<ProductImage> ProductImages { get; set; }
+
+/*
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+    public DbSet<CartItem> CartItems { get; set; }
+    
+    
+
+*/
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Configurar relación User - Role (uno a muchos)
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.Role)
+            .WithMany(r => r.Users)
+            .HasForeignKey(u => u.RoleID);
+
+        // Configurar relación User - ShippingAddres (uno a muchos)
+        modelBuilder.Entity<ShippingAddress>(entity =>
+        {
+            entity.HasKey(sa => sa.AddressID); // Definir explícitamente la clave primaria
+            
+            entity.HasOne(sa => sa.User)
+                .WithMany(u => u.ShippingAddress) // Asegúrate que User tenga esta propiedad
+                .HasForeignKey(sa => sa.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        /*
+
+        // Configurar relación User - Order (uno a muchos)
+        modelBuilder.Entity<Order>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(o => o.UserId);
+
+        // Configurar relación Order - OrderItem (uno a muchos)
+        modelBuilder.Entity<OrderItem>()
+            .HasOne<Order>()
+            .WithMany()
+            .HasForeignKey(oi => oi.OrderId);
+
+        // Configurar relación Product - OrderItem (uno a muchos)
+        modelBuilder.Entity<OrderItem>()
+            .HasOne<Product>()
+            .WithMany()
+            .HasForeignKey(oi => oi.ProductId);
+
+        // Configurar relación User - ShoppingCart (uno a muchos)
+        modelBuilder.Entity<ShoppingCart>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(sc => sc.UserId);
+
+        // Configurar relación ShoppingCart - CartItem (uno a muchos)
+        modelBuilder.Entity<CartItem>()
+            .HasOne<ShoppingCart>()
+            .WithMany()
+            .HasForeignKey(ci => ci.ShoppingCartId);
+
+        // Configurar relación Product - CartItem (uno a muchos)
+        modelBuilder.Entity<CartItem>()
+            .HasOne<Product>()
+            .WithMany()
+            .HasForeignKey(ci => ci.ProductId);
+
+        */
+
+
+        // Configurar relación Product - ProductImage (uno a muchos)
+        modelBuilder.Entity<ProductImage>(entity =>
+        {
+            entity.HasKey(pi => pi.ImageID);  // Definir explícitamente la clave primaria
+            
+            entity.HasOne(pi => pi.Product)
+                .WithMany(p => p.ProductImages)  // Asume que añadirás esta propiedad a Product
+                .HasForeignKey(pi => pi.ProductID)  // Usar ProductID, no ImageID
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configurar relación Product - Status (uno a muchos)
+        modelBuilder.Entity<Product>()
+            .HasOne(p => p.Status)
+            .WithMany()
+            .HasForeignKey(p => p.StatusID)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
 }
+

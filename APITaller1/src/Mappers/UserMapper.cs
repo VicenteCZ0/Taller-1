@@ -8,20 +8,26 @@ using APITaller1.src.models;
 
 namespace APITaller1.src.Mappers
 {
-    public class UserMapper
-    {
-        public static UserDto MapToDTO(User user) =>
-             new()
+public class UserMapper
+{
+        public static UserDto MapToDTO(User user)
+        {
+            var firstAddress = user.ShippingAddress?.FirstOrDefault();
+
+            return new UserDto
             {
-                FirtsName = user.FirtsName,
+                FirstName = user.FirstName,
                 LastName = user.LastName,
-                Thelephone = user.Thelephone,
+                Telephone = user.Telephone,
                 Email = user.Email,
-                Street = user.ShippingAddres?.Street ?? string.Empty,
-                Number = user.ShippingAddres?.Number ?? string.Empty,
-                Commune = user.ShippingAddres?.Commune ?? string.Empty,
-                Region = user.ShippingAddres?.Region ?? string.Empty,
-                PostalCode = user.ShippingAddres?.PostalCode ?? string.Empty,
-            };    
+
+                Street = firstAddress?.Street ?? string.Empty,
+                Number = firstAddress?.Number ?? string.Empty,
+                Commune = firstAddress?.Commune ?? string.Empty,
+                Region = firstAddress?.Region ?? string.Empty,
+                PostalCode = firstAddress?.PostalCode ?? string.Empty,
+            };
+        }
     }
+
 }
