@@ -5,13 +5,12 @@ using System.Threading.Tasks;
 
 namespace APITaller1.src.models
 {
-    public class ShippingAddres
+    public class ShippingAddress
     {
-        public int Id { get; set; }
+        public int AddressID { get; set; }
         public required string Street { get; set; }
         public required string Number { get; set; }
         public required string Commune {get; set;}
-
         public required string Region { get; set; }
         public required string PostalCode { get; set; }
 
