@@ -10,14 +10,14 @@ namespace APITaller1.src.Dtos
     {
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener al menos 3 caracteres.")]
-        public required string FirtsName { get; set; }
+        public required string FirstName { get; set; }
         [Required(ErrorMessage = "El apellido es obligatorio.")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "El apellido debe tener al menos 3 caracteres.")]
         public required string LastName { get; set; }
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "El formato del correo electrónico no es válido.")]
         public required string Email { get; set; }
-        public required string Thelephone { get; set; }
+        public required string Telephone { get; set; }
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
         [StringLength(100, MinimumLength = 8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]|\\:;\""<>,.?/~`]).+$", 
