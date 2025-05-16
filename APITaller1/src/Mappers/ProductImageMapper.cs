@@ -15,15 +15,6 @@ namespace APITaller1.src.Mappers
             };
         }
 
-        public static ProductImage ToModel(CreateProductImageDto dto)
-        {
-            return new ProductImage
-            {
-                Url_Image = dto.Url_Image,
-                ProductID = dto.ProductID
-            };
-        }
-
         public static void UpdateModel(ProductImage image, ProductImageDto dto)
         {
             image.Url_Image = dto.Url_Image;

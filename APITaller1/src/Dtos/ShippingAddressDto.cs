@@ -13,5 +13,6 @@ namespace APITaller1.src.Dtos
         public required string Commune { get; set; }
         public required string Region { get; set; }
         public required string PostalCode { get; set; }
+        public int UserId { get; set; }
     }
 }

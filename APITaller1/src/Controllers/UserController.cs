@@ -23,12 +23,20 @@ namespace APITaller1.src.Controllers
             return Ok(users);
         }
         [HttpPost]
-        public async Task<IActionResult> CreateUser( CreateUserDto userDto)
+        public async Task<IActionResult> CreateUser(CreateUserDto userDto)
         {
             if (userDto.ConfirmPassword != userDto.Password)
             {
                 return BadRequest("Passwords do not match");
             }
+
+            // Primero, obtén el objeto Role correspondiente al RoleID
+            var role = await _context.RoleRepository.GetRoleByIdAsync(userDto.RoleID);
+            if (role == null)
+            {
+                return BadRequest("Invalid Role ID");
+            }
+
             var user = new User
             {
                 FirstName = userDto.FirstName,
@@ -36,6 +44,8 @@ namespace APITaller1.src.Controllers
                 Email = userDto.Email,
                 Password = userDto.Password,
                 Telephone = userDto.Telephone,
+                RoleID = userDto.RoleID,  // Asigna el RoleID
+                Role = role,              // Asigna el objeto Role
                 ShippingAddress = new List<ShippingAddress> {
                     new ShippingAddress
                     {
