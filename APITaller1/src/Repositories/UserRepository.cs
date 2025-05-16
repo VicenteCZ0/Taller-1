@@ -36,17 +36,25 @@
             
             public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
             {
-                var users = await _context.Users.Include(x => x.ShippingAddress).ToListAsync();
+                var users = await _context.Users
+                    .Include(x => x.ShippingAddress)
+                    .Include(x => x.Role)  // <-- Asegúrate que se incluya el Role
+                    .ToListAsync();
 
-                
                 return users.Select(UserMapper.MapToDTO);
             }
 
             public Task<UserDto> GetUserByIdAsync(string firstName)
             {
-                var user = _context.Users.Include(x => x.ShippingAddress).FirstOrDefault(x => x.FirstName == firstName) ?? throw new Exception("User not found");
+                var user = _context.Users
+                    .Include(x => x.ShippingAddress)
+                    .Include(x => x.Role)   // Incluye Role aquí también
+                    .FirstOrDefault(x => x.FirstName == firstName)
+                    ?? throw new Exception("User not found");
+
                 return Task.FromResult(UserMapper.MapToDTO(user));
             }
+
             public void UpdateShippingAddressAsync(UserDto userDto)
             {
                 var user = _context.Users.Include(x => x.ShippingAddress).FirstOrDefault(x => x.FirstName == userDto.FirstName)

@@ -9,6 +9,8 @@ namespace APITaller1.src.Mappers
         {
             return new UserDto
             {
+                UserID = user.UserID,  // <--- Aquí debes asignar UserID desde la entidad
+
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
@@ -16,7 +18,7 @@ namespace APITaller1.src.Mappers
                 DateOfBirth = user.DateOfBirth,
                 AccountStatus = user.AccountStatus,
                 LastLogin = user.LastLogin,
-                RoleName = user.Role.RolName,
+                RoleName = user.Role?.RolName ?? "",
 
                 ShippingAddresses = user.ShippingAddress.Select(addr => new ShippingAddressDto
                 {
@@ -25,9 +27,11 @@ namespace APITaller1.src.Mappers
                     Number = addr.Number,
                     Commune = addr.Commune,
                     Region = addr.Region,
-                    PostalCode = addr.PostalCode
+                    PostalCode = addr.PostalCode,
+                    UserId = addr.User?.UserID ?? 0  // <--- También asignar UserId aquí
                 }).ToList()
             };
         }
+
     }
 }

@@ -2,17 +2,28 @@ using Microsoft.EntityFrameworkCore;
 using APITaller1.src.data;
 using APITaller1.src.Repositories;
 using Serilog;
-using APITaller1.src.interfaces; 
+using APITaller1.src.interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseUrls("https://localhost:7283", "http://localhost:5000");
+
 // Configura Serilog leyendo del archivo appsettings.json (si tienes uno)
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration) // <-- conecta config.json
-    .Enrich.FromLogContext()
+    .ReadFrom.Configuration(builder.Configuration)
+    .WriteTo.Console() // <-- Agrega esto
+    .Enrich.FromLogContext()    
     .CreateLogger();
 
-builder.Host.UseSerilog(); // <-- conecta Serilog con ASP.NET Core
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .WriteTo.Console() // <-- Asegúrate que esto esté aquí también
+        .Enrich.FromLogContext()
+        .Enrich.WithThreadId()
+        .Enrich.WithMachineName();
+});// <-- conecta Serilog con ASP.NET Core
 try
 {
     Log.Information("starting server.");
@@ -26,19 +37,21 @@ try
     builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
     builder.Services.AddScoped<IStatusRepository, StatusRepository>();
     builder.Services.AddScoped<UnitOfWork>();
-    builder.Host.UseSerilog((context, services, configuration) =>
-    {
-        configuration
-            .ReadFrom.Configuration(context.Configuration)
-            .Enrich.FromLogContext()
-            .Enrich.WithThreadId()
-            .Enrich.WithMachineName();
-
-    });
-
     var app = builder.Build();
     DbInitializer.InitDb(app);
     app.MapControllers();
+
+    // Imprimir las URLs correctamente DESPUÉS de iniciar el servidor
+    var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+    lifetime.ApplicationStarted.Register(() =>
+    {
+        var serverAddresses = app.Urls;
+        foreach (var address in serverAddresses)
+        {
+            Console.WriteLine($"✅ Server is listening on: {address}");
+        }
+    });
+
     app.Run();
 }
 catch (Exception ex)
