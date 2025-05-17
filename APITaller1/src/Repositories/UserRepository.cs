@@ -20,7 +20,7 @@
             {
                 if (shippingAddress != null)
                 {
-                    user.ShippingAddress = new List<ShippingAddress> { shippingAddress };
+                    user.ShippingAddress = user.ShippingAddress = shippingAddress;
                     shippingAddress.User = user; // importante para mantener la relación
                     await _context.ShippingAddress.AddAsync(shippingAddress);
                 }
@@ -38,7 +38,6 @@
             {
                 var users = await _context.Users
                     .Include(x => x.ShippingAddress)
-                    .Include(x => x.Role)  // <-- Asegúrate que se incluya el Role
                     .ToListAsync();
 
                 return users.Select(UserMapper.MapToDTO);
@@ -48,7 +47,6 @@
             {
                 var user = _context.Users
                     .Include(x => x.ShippingAddress)
-                    .Include(x => x.Role)   // Incluye Role aquí también
                     .FirstOrDefault(x => x.FirstName == firstName)
                     ?? throw new Exception("User not found");
 
@@ -60,32 +58,35 @@
                 var user = _context.Users.Include(x => x.ShippingAddress).FirstOrDefault(x => x.FirstName == userDto.FirstName)
                         ?? throw new Exception("User not found");
 
-                var direccion = user.ShippingAddress.FirstOrDefault();
-
-                if (direccion == null)
+                var direccionDto = userDto.ShippingAddress;
+                if (direccionDto == null)
                 {
-                    direccion = new ShippingAddress
+                    throw new Exception("Shipping address is required");
+                }
+
+                if (user.ShippingAddress == null)
+                {
+                    user.ShippingAddress = new ShippingAddress
                     {
-                        Street = userDto.ShippingAddresses?.FirstOrDefault()?.Street ?? string.Empty,
-                        Number = userDto.ShippingAddresses?.FirstOrDefault()?.Number ?? string.Empty,
-                        Commune = userDto.ShippingAddresses?.FirstOrDefault()?.Commune ?? string.Empty,
-                        Region = userDto.ShippingAddresses?.FirstOrDefault()?.Region ?? string.Empty,
-                        PostalCode = userDto.ShippingAddresses?.FirstOrDefault()?.PostalCode ?? string.Empty,
-                        User = user // Asignar la relación
+                        Street = direccionDto.Street,
+                        Number = direccionDto.Number,
+                        Commune = direccionDto.Commune,
+                        Region = direccionDto.Region,
+                        PostalCode = direccionDto.PostalCode,
+                        User = user
                     };
 
-                    user.ShippingAddress = new List<ShippingAddress> { direccion };
-                    _context.ShippingAddress.Add(direccion);
+                    _context.ShippingAddress.Add(user.ShippingAddress);
                 }
                 else
                 {
-                    direccion.Street = userDto.ShippingAddresses?.FirstOrDefault()?.Street ?? string.Empty;
-                    direccion.Number = userDto.ShippingAddresses?.FirstOrDefault()?.Number ?? string.Empty;
-                    direccion.Commune = userDto.ShippingAddresses?.FirstOrDefault()?.Commune ?? string.Empty;
-                    direccion.Region = userDto.ShippingAddresses?.FirstOrDefault()?.Region ?? string.Empty;
-                    direccion.PostalCode = userDto.ShippingAddresses?.FirstOrDefault()?.PostalCode ?? string.Empty;
+                    user.ShippingAddress.Street = direccionDto.Street;
+                    user.ShippingAddress.Number = direccionDto.Number;
+                    user.ShippingAddress.Commune = direccionDto.Commune;
+                    user.ShippingAddress.Region = direccionDto.Region;
+                    user.ShippingAddress.PostalCode = direccionDto.PostalCode;
 
-                    _context.ShippingAddress.Update(direccion);
+                    _context.ShippingAddress.Update(user.ShippingAddress);
                 }
 
                 _context.Users.Update(user);

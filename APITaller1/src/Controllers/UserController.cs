@@ -18,7 +18,6 @@ namespace APITaller1.src.Controllers
             var users = await _context.UserRepository.GetAllUsersAsync();
             return Ok(users);
         }
-
         [HttpPost]
         public async Task<IActionResult> CreateUser(CreateUserDto userDto)
         {
@@ -27,35 +26,25 @@ namespace APITaller1.src.Controllers
                 return BadRequest("Passwords do not match");
             }
 
-            var role = await _context.RoleRepository.GetRoleByIdAsync(userDto.RoleID);
-            if (role == null)
+            var shippingAddress = new ShippingAddress
             {
-                return BadRequest("Invalid Role ID");
-            }
+                Street = userDto.Street ?? string.Empty,
+                Number = userDto.Number ?? string.Empty,
+                Commune = userDto.Commune ?? string.Empty,
+                Region = userDto.Region ?? string.Empty,
+                PostalCode = userDto.PostalCode ?? string.Empty
+            };
 
             var user = new User
             {
                 FirstName = userDto.FirstName,
                 LastName = userDto.LastName,
                 Email = userDto.Email,
-                Password = userDto.Password,
                 Telephone = userDto.Telephone,
-                RoleID = userDto.RoleID,
-                Role = role,
-                ShippingAddress = new List<ShippingAddress>
-                {
-                    new ShippingAddress
-                    {
-                        Street = userDto.Street ?? string.Empty,
-                        Number = userDto.Number ?? string.Empty,
-                        Commune = userDto.Commune ?? string.Empty,
-                        Region = userDto.Region ?? string.Empty,
-                        PostalCode = userDto.PostalCode ?? string.Empty
-                    }
-                }
+                ShippingAddress = shippingAddress
             };
 
-            await _context.UserRepository.CreateUserAsync(user, user.ShippingAddress.FirstOrDefault());
+            await _context.UserRepository.CreateUserAsync(user, shippingAddress);
             await _context.SaveChangeAsync();
             return Ok(user);
         }

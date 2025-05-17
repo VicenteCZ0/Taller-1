@@ -11,7 +11,6 @@ public class UnitOfWork(
     StoreContext context,
     IProductRepository productRepository,
     IUserRepository userRepository,
-    IRoleRepository roleRepository,
     IProductImageRepository productImageRepository,
     IStatusRepository statusRepository)
 {
@@ -19,8 +18,6 @@ public class UnitOfWork(
 
     public IUserRepository UserRepository { get; set; } = userRepository;
     public IProductRepository ProductRepository { get; set; } = productRepository;
-    public IRoleRepository RoleRepository { get; set; } = roleRepository;
-
     public IProductImageRepository ProductImageRepository { get; set; } = productImageRepository;
 
     public IStatusRepository StatusRepository { get; set; } = statusRepository;
