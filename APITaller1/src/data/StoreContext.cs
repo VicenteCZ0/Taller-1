@@ -20,16 +20,19 @@ public class StoreContext : DbContext
     public DbSet<Role> Roles { get; set; }
     public DbSet<Status> Status { get; set; }
     public DbSet<ProductImage> ProductImages { get; set; }
+    public DbSet<Order> Orders { get; set; }  
+    public DbSet<OrderItem> OrderItems { get; set; }
+    
 
 /*
-    public DbSet<Order> Orders { get; set; }
-    public DbSet<OrderItem> OrderItems { get; set; }
-    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
-    public DbSet<CartItem> CartItems { get; set; }
-    
-    
+                    public DbSet<Order> Orders { get; set; }
+                    public DbSet<OrderItem> OrderItems { get; set; }
+                    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+                    public DbSet<CartItem> CartItems { get; set; }
 
-*/
+
+
+                */
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,7 +48,7 @@ public class StoreContext : DbContext
         modelBuilder.Entity<ShippingAddress>(entity =>
         {
             entity.HasKey(sa => sa.AddressID); // Definir explícitamente la clave primaria
-            
+
             entity.HasOne(sa => sa.User)
                 .WithMany(u => u.ShippingAddress) // Asegúrate que User tenga esta propiedad
                 .HasForeignKey(sa => sa.UserId)
@@ -97,7 +100,7 @@ public class StoreContext : DbContext
         modelBuilder.Entity<ProductImage>(entity =>
         {
             entity.HasKey(pi => pi.ImageID);  // Definir explícitamente la clave primaria
-            
+
             entity.HasOne(pi => pi.Product)
                 .WithMany(p => p.ProductImages)  // Asume que añadirás esta propiedad a Product
                 .HasForeignKey(pi => pi.ProductID)  // Usar ProductID, no ImageID
