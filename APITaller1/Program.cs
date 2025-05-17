@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using APITaller1.src.data;
 using Serilog;
+using APITaller1.src.Repositories; 
+using APITaller1.src.interfaces;
+using APITaller1.src.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configura Serilog leyendo del archivo appsettings.json (si tienes uno)
@@ -18,6 +21,15 @@ try
         builder.Services.AddDbContext<StoreContext>(options => 
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
         //builder.Services.AddScoped<IUserService, UserService>();
+        // Repositorios
+        builder.Services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
+        builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+
+        // Servicios
+        builder.Services.AddScoped<CartItemService>();
+
+// Unit of Work
+builder.Services.AddScoped<UnitOfWork>();
     builder.Host.UseSerilog((context, services, configuration) =>
     {
         configuration
