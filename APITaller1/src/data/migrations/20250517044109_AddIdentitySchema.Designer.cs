@@ -3,6 +3,7 @@ using System;
 using APITaller1.src.data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APITaller1.data.migrations
 {
     [DbContext(typeof(StoreContext))]
-    partial class StoreContextModelSnapshot : ModelSnapshot
+    [Migration("20250517044109_AddIdentitySchema")]
+    partial class AddIdentitySchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
@@ -79,6 +82,21 @@ namespace APITaller1.data.migrations
                     b.HasIndex("ProductID");
 
                     b.ToTable("ProductImages");
+                });
+
+            modelBuilder.Entity("APITaller1.src.models.Role", b =>
+                {
+                    b.Property<int>("RoleID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RolName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("RoleID");
+
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("APITaller1.src.models.ShippingAddress", b =>
@@ -199,6 +217,9 @@ namespace APITaller1.data.migrations
                     b.Property<DateTime>("RegisteredAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("RoleID")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
 
@@ -221,6 +242,8 @@ namespace APITaller1.data.migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("RoleID");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -384,6 +407,17 @@ namespace APITaller1.data.migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("APITaller1.src.models.User", b =>
+                {
+                    b.HasOne("APITaller1.src.models.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
@@ -438,6 +472,11 @@ namespace APITaller1.data.migrations
             modelBuilder.Entity("APITaller1.src.models.Product", b =>
                 {
                     b.Navigation("ProductImages");
+                });
+
+            modelBuilder.Entity("APITaller1.src.models.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("APITaller1.src.models.User", b =>
