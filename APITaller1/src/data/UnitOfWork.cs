@@ -7,16 +7,34 @@ using APITaller1.src.interfaces;
 
 namespace APITaller1.src.data;
 
-public class UnitOfWork(StoreContext context, IProductRepository productRepository, IUserRepository userRepository)
+public class UnitOfWork
 {
-    private readonly StoreContext _context = context;
-    public IUserRepository UserRepository { get; set; } = userRepository;
+    private readonly StoreContext _context;
 
-    public IProductRepository ProductRepository { get; set; } = productRepository;
-    
+    public IUserRepository UserRepository { get; }
+    public IProductRepository ProductRepository { get; }
+    public IOrderRepository OrderRepository { get; }
+    public ICartItemRepository CartItemRepository { get; }
+    public IShoppingCartRepository ShoppingCartRepository { get; }
+
+    public UnitOfWork(
+        StoreContext context,
+        IUserRepository userRepository,
+        IProductRepository productRepository,
+        IOrderRepository orderRepository,
+        ICartItemRepository cartItemRepository,
+        IShoppingCartRepository shoppingCartRepository)
+    {
+        _context = context;
+        UserRepository = userRepository;
+        ProductRepository = productRepository;
+        OrderRepository = orderRepository;
+        CartItemRepository = cartItemRepository;
+        ShoppingCartRepository = shoppingCartRepository;
+    }
+
     public async Task SaveChangeAsync()
     {
         await _context.SaveChangesAsync();
     }
-   
 }
