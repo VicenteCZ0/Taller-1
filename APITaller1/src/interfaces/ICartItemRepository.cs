@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using APITaller1.src.models;
 public interface ICartItemRepository
 {
-    Task<IEnumerable<CartItem>> GetItemsByShoppingCartIdAsync(int shoppingCartId);
-    Task<CartItem?> GetByIdAsync(int id);
-    Task AddAsync(CartItem cartItem);
-    void Update(CartItem cartItem);
-    void Remove(CartItem cartItem);
+    Task<IEnumerable<CartItem>> GetByCartIdAsync(int cartId);
+    Task<CartItem?> GetByCartAndProductAsync(int cartId, int productId);
+    Task AddAsync(CartItem item);
+    Task UpdateAsync(CartItem item);
+    Task DeleteAsync(CartItem item);
 }

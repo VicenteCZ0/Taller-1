@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-public class CartItemCreationDto
+namespace APITaller1.src.Dtos
 {
-    [Required]
-    public int ProductID { get; set; }
+    public class CartItemShowDto
+    {
+        public int ProductID { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public decimal UnitPrice { get; set; }
+        public int Quantity { get; set; }
 
-    [Range(1, int.MaxValue)]
-    public int Quantity { get; set; }
+        public decimal Subtotal => UnitPrice * Quantity;
+    }
 }
