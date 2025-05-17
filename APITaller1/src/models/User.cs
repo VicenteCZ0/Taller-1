@@ -12,7 +12,7 @@ namespace APITaller1.src.models
         public required string LastName { get; set; }
         public required string Email { get; set; }
         public required string Password { get; set; }
-        public string Telephone { get; set; }
+        public required string Telephone { get; set; }
         public DateTime DateOfBirth { get; set; }
         public bool AccountStatus { get; set; } 
         public DateTime LastLogin { get; set; }
@@ -20,7 +20,7 @@ namespace APITaller1.src.models
         // Navigation properties
         public ICollection<ShippingAddress> ShippingAddress { get; set; } = new List<ShippingAddress>();
 
-        public Role Role { get; set; }
+        public required Role Role { get; set; }
         
     }
 }

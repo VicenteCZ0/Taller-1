@@ -59,6 +59,7 @@ public class DbInitializer
                 Email = "ignacio.mancilla@gmail.com",
                 Password = "Pa$$word2025",
                 RoleID = adminRole.RoleID,
+                Role = adminRole,
                 AccountStatus = true,
                 Telephone = "+56912345678",
                 DateOfBirth = new DateTime(1990, 1, 1),
@@ -94,11 +95,12 @@ public class DbInitializer
         context.SaveChanges();
 
         // Obtener el ID del status "Active"
-        var activeStatusId = context.Status
-            .Where(s => s.StatusName == "Active")
-            .Select(s => s.StatusID)
-            .FirstOrDefault();
+        var activeStatus = context.Status.FirstOrDefault(s => s.StatusName == "Active");
 
+        if (activeStatus == null)
+            throw new InvalidOperationException("No se pudo encontrar el estado 'Active' después de guardarlo.");
+
+        var activeStatusId = activeStatus.StatusID;
         // Generar productos
         var urls = new[]
         {
