@@ -9,8 +9,10 @@ using APITaller1.src.models;
 namespace APITaller1.src.interfaces
 {
     public interface IShoppingCartRepository
-    {
-        Task<ShoppingCart?> GetCartWithItemsAsync(int userId);
-        ShoppingCart CreateCart(int userId);
-    }
+{
+    Task<ShoppingCart?> GetByUserIdAsync(string userId);
+    Task<ShoppingCart> GetOrCreateCartAsync(string userId);
+    Task AddAsync(ShoppingCart cart);
+}
+
 }
