@@ -9,43 +9,55 @@ using APITaller1.src.models;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace APITaller1.src.Repositories;
-public class CartItemRepository : ICartItemRepository
+namespace APITaller1.src.Repositories
 {
-    private readonly StoreContext _context;
-
-    public CartItemRepository(StoreContext context)
+    public class CartItemRepository : ICartItemRepository
     {
-        _context = context;
-    }
+        private readonly StoreContext _context;
 
-    public async Task<IEnumerable<CartItem>> GetItemsByShoppingCartIdAsync(int shoppingCartId)
-    {
-        return await _context.CartItems
-            .Include(ci => ci.Product)
-            .Where(ci => ci.ShoppingCartID == shoppingCartId)
-            .ToListAsync();
-    }
+        public CartItemRepository(StoreContext context)
+        {
+            _context = context;
+        }
 
-    public async Task<CartItem?> GetByIdAsync(int id)
-    {
-        return await _context.CartItems
-            .Include(ci => ci.Product)
-            .FirstOrDefaultAsync(ci => ci.ID == id);
-    }
+        public async Task<IEnumerable<CartItem>> GetByCartIdAsync(int cartId)
+        {
+            return await _context.CartItems
+                .Include(ci => ci.Product)
+                .Where(ci => ci.ShoppingCartID == cartId)
+                .ToListAsync();
+        }
 
-    public async Task AddAsync(CartItem cartItem)
-    {
-        await _context.CartItems.AddAsync(cartItem);
-    }
+        public async Task<CartItem?> GetByCartAndProductAsync(int cartId, int productId)
+        {
+            return await _context.CartItems
+                .FirstOrDefaultAsync(ci => ci.ShoppingCartID == cartId && ci.ProductID == productId);
+        }
 
-    public void Update(CartItem cartItem)
-    {
-        _context.CartItems.Update(cartItem);
-    }
+        public async Task AddAsync(CartItem item)
+        {
+            await _context.CartItems.AddAsync(item);
+        }
 
-    public void Remove(CartItem cartItem)
-    {
-        _context.CartItems.Remove(cartItem);
+        public async Task UpdateAsync(CartItem item)
+        {
+            _context.CartItems.Update(item);
+            await Task.CompletedTask;
+        }
+
+        public async Task DeleteAsync(CartItem item)
+        {
+            _context.CartItems.Remove(item);
+            await Task.CompletedTask;
+        }
+
+        public async Task ClearCartAsync(int cartId)
+        {
+            var items = await _context.CartItems
+                .Where(ci => ci.ShoppingCartID == cartId)
+                .ToListAsync();
+
+            _context.CartItems.RemoveRange(items);
+        }
     }
 }
