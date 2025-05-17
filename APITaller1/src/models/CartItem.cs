@@ -15,7 +15,7 @@ namespace APITaller1.src.models
         public int ProductID { get; set; }
 
         // Relaciones
-        public ShoppingCart? ShoppingCart { get; set; }
-        public Product? Product { get; set; }
+        public ShoppingCart ShoppingCart { get; set; }
+        public Product Product { get; set; }
     }
 }

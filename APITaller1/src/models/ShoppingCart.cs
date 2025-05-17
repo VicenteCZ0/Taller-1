@@ -9,7 +9,7 @@ namespace APITaller1.src.models
     {
         public int ID { get; set; }
 
-        public string UserID { get; set; }
+        public int UserID { get; set; }
 
         // Relaciones
         public User User { get; set; }

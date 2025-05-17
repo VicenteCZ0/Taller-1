@@ -10,8 +10,8 @@ namespace APITaller1.src.interfaces
 {
     public interface IShoppingCartRepository
 {
-    Task<ShoppingCart?> GetByUserIdAsync(string userId);
-    Task<ShoppingCart> GetOrCreateCartAsync(string userId);
+    Task<ShoppingCart?> GetByUserIdAsync(int userId);
+    Task<ShoppingCart> GetOrCreateCartAsync(int userId);
     Task AddAsync(ShoppingCart cart);
 }
 
