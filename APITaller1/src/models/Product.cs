@@ -14,7 +14,7 @@ namespace APITaller1.src.models
         public int Stock { get; set; }
         public required string Category { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string[]? Urls { get; set; }
+        //public string[]? Urls { get; set; }
         public required string Brand { get; set; }
 
         // Clave foránea correcta

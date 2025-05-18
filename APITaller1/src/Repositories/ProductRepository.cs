@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using APITaller1.src.data;
 using APITaller1.src.interfaces;
 using APITaller1.src.models;
+using APITaller1.src.Helpers;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -62,7 +63,7 @@ public class ProductRepository : IProductRepository
         existingProduct.Price = product.Price;
         existingProduct.Stock = product.Stock;
         existingProduct.Category = product.Category;
-        existingProduct.Urls = product.Urls;
+        //existingProduct.Urls = product.Urls;
         existingProduct.Brand = product.Brand;
         existingProduct.StatusID = product.StatusID;
 
@@ -88,5 +89,76 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Status)
             .Include(p => p.ProductImages)
             .ToListAsync();
+    }
+
+
+    public async Task<Product?> GetByIdWithImagesAsync(int id)
+    {
+        return await _context.Products
+            .Include(p => p.Status)        // Carga el Status
+            .Include(p => p.ProductImages) // Carga las imágenes
+            .FirstOrDefaultAsync(p => p.ProductID == id);
+    }
+
+    /*
+        public async Task<bool> HasOrdersAsync(int productId)
+        {
+            return await _context.OrderItems.AnyAsync(o => o.ProductID == productId);
+        }
+
+    */
+    public async Task<Product?> GetByIdAsync(int id)
+    {
+        return await _context.Products.FindAsync(id);
+    }
+
+
+    public async Task<PagedList<Product>> GetCatalogAsync(ProductQueryParams queryParams)
+    {
+        var query = _context.Products
+            .Include(p => p.ProductImages)
+            .Include(p => p.Status)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(queryParams.Category))
+            query = query.Where(p => p.Category.ToLower() == queryParams.Category.ToLower());
+
+        if (queryParams.MinPrice.HasValue)
+            query = query.Where(p => p.Price >= queryParams.MinPrice.Value);
+
+        if (queryParams.MaxPrice.HasValue)
+            query = query.Where(p => p.Price <= queryParams.MaxPrice.Value);
+
+        if (!string.IsNullOrEmpty(queryParams.Brand))
+            query = query.Where(p => p.Brand.ToLower() == queryParams.Brand.ToLower());
+
+        if (!string.IsNullOrEmpty(queryParams.Search))
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(queryParams.Search.ToLower()) ||
+                p.Description.ToLower().Contains(queryParams.Search.ToLower()));
+
+        // Ordenamiento
+        query = queryParams.Sort switch
+        {
+            "priceAsc" => query.OrderBy(p => p.Price),
+            "priceDesc" => query.OrderByDescending(p => p.Price),
+            "az" => query.OrderBy(p => p.Name),
+            "za" => query.OrderByDescending(p => p.Name),
+            _ => query.OrderBy(p => p.ProductID)
+        };
+
+        return await PagedList<Product>.CreateAsync(query, queryParams.PageNumber, queryParams.PageSize);
+    }
+
+    public async Task<PagedList<Product>> GetAdminListAsync(AdminProductQueryParams queryParams)
+    {
+        var query = _context.Products
+            .Include(p => p.ProductImages)
+            .Include(p => p.Status)
+            .AsQueryable();
+
+        // Puedes aplicar los mismos filtros que en el catálogo
+
+        return await PagedList<Product>.CreateAsync(query, queryParams.PageNumber, queryParams.PageSize);
     }
 }

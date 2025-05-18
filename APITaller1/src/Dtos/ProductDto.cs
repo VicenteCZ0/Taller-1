@@ -15,7 +15,7 @@ namespace APITaller1.src.Dtos
         public string Category { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public string[]? Urls { get; set; }
-        public string Brand { get; set; } = null!;
+        public string Brand { get; set; } = null!;  
         public string StatusName { get; set; } = null!;
 
         public List<string> ImageUrls { get; set; } = new();

@@ -67,6 +67,7 @@ try
     builder.Services.AddScoped<IStatusRepository, StatusRepository>();
     builder.Services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
     builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+    builder.Services.AddScoped<IPhotoService, PhotoService>();
 
     // Servicios adicionales
     builder.Services.AddScoped<CartItemService>();
