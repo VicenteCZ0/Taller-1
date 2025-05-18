@@ -55,46 +55,23 @@ public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
             .WithMany()
             .HasForeignKey(oi => oi.ProductID);
 
-            
-        /*
-
-        // Configurar relación User - Order (uno a muchos)
-        modelBuilder.Entity<Order>()
-            .HasOne<User>()
-            .WithMany()
-            .HasForeignKey(o => o.UserId);
-
-        // Configurar relación Order - OrderItem (uno a muchos)
-        modelBuilder.Entity<OrderItem>()
-            .HasOne<Order>()
-            .WithMany()
-            .HasForeignKey(oi => oi.OrderId);
-
-        // Configurar relación Product - OrderItem (uno a muchos)
-        modelBuilder.Entity<OrderItem>()
-            .HasOne<Product>()
-            .WithMany()
-            .HasForeignKey(oi => oi.ProductId);
-
         // Configurar relación User - ShoppingCart (uno a muchos)
         modelBuilder.Entity<ShoppingCart>()
             .HasOne<User>()
             .WithMany()
-            .HasForeignKey(sc => sc.UserId);
+            .HasForeignKey(sc => sc.UserID);
 
         // Configurar relación ShoppingCart - CartItem (uno a muchos)
         modelBuilder.Entity<CartItem>()
             .HasOne<ShoppingCart>()
             .WithMany()
-            .HasForeignKey(ci => ci.ShoppingCartId);
+            .HasForeignKey(ci => ci.ShoppingCartID);
 
         // Configurar relación Product - CartItem (uno a muchos)
         modelBuilder.Entity<CartItem>()
             .HasOne<Product>()
             .WithMany()
-            .HasForeignKey(ci => ci.ProductId);
-
-        */
+            .HasForeignKey(ci => ci.ProductID);
 
 
         // Configurar relación Product - ProductImage (uno a muchos)
