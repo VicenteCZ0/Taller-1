@@ -50,5 +50,25 @@ namespace APITaller1.src.Services
 
             return order;
         }
+        public async Task<List<OrderDto>> GetOrdersByUserAsync(int userId)
+        {
+            var orders = await _unitOfWork.OrderRepository.GetByUserAsync(userId);
+
+            return orders.Select(order => new OrderDto
+            {
+                OrderId = order.ID,
+                CreatedAt = order.CreatedAt,
+                Status = order.Status,
+                TotalAmount = order.TotalAmount,
+                Items = order.OrderItems.Select(oi => new OrderItemDto
+                {
+                    ProductId = oi.ProductID,
+                    ProductName = oi.Product.Name,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice
+                }).ToList()
+            }).ToList();
+        }
+
     }
 }
