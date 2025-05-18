@@ -11,10 +11,13 @@ namespace APITaller1.src.interfaces
     public interface IUserRepository
     {
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
-        Task<UserDto> GetUserByIdAsync(string firtsName);
+        Task<UserDto?> GetUserByIdAsync(int userId);
+        Task<UserDto?> GetUserByUsernameAsync(string username);
+        Task<UserDto?> GetUserByEmailAsync(string email);
         Task CreateUserAsync(User user, ShippingAddress? shippingAddress);
         void UpdateUserAsync(User user);
-        void UpdateShippingAddressAsync(UserDto userDto);
-        void DeleteUserAsync(User user, ShippingAddress shippingAddress);
+        void UpdateShippingAddressAsync(int userId, ShippingAddressDto shippingAddressDto);
+        void DeleteUserAsync(User user);
+        Task<bool> SaveChangesAsync();
     }
 }

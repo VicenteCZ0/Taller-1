@@ -9,23 +9,24 @@ namespace APITaller1.src.Mappers
         {
             return new UserDto
             {
+                UserID = user.Id, 
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
                 Telephone = user.Telephone,
-                DateOfBirth = user.DateOfBirth,
-                AccountStatus = user.AccountStatus,
+                RegisteredAt = user.RegisteredAt,
                 LastLogin = user.LastLogin,
-
+                AccountStatus = user.AccountStatus,
+                DeactivationReason = user.DeactivationReason,
+                DateOfBirth = user.DateOfBirth,
                 ShippingAddress = user.ShippingAddress != null
                     ? new ShippingAddressDto
                     {
-                        AddressID = user.ShippingAddress.AddressID,
                         Street = user.ShippingAddress.Street,
                         Number = user.ShippingAddress.Number,
                         Commune = user.ShippingAddress.Commune,
                         Region = user.ShippingAddress.Region,
-                        PostalCode = user.ShippingAddress.PostalCode,
+                        PostalCode = user.ShippingAddress.PostalCode
                     }
                     : null
             };

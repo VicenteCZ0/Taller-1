@@ -42,6 +42,13 @@ try
     // Agregar servicios básicos
     builder.Services.AddControllers();
 
+    builder.Services.Configure<RouteOptions>(options =>
+    {
+        options.LowercaseUrls = true;
+        options.LowercaseQueryStrings = true;
+        options.AppendTrailingSlash = false;
+    });
+
     // DbContext
     builder.Services.AddDbContext<StoreContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -69,33 +76,59 @@ try
     builder.Services.AddScoped<UnitOfWork>();
 
     // Autenticación JWT
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        var key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:SignInKey"]);
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            var key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:SignInKey"]);
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = builder.Configuration["JWT:Issuer"],
-                ValidAudience = builder.Configuration["JWT:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(key)
-            };
-        });
-
-    builder.Services.AddAuthorization();
-
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JWT:Issuer"],
+            ValidAudience = builder.Configuration["JWT:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key)
+        };
+    });
     var app = builder.Build();
 
     // Inicialización de la base de datos
     DbInitializer.InitDb(app);
 
-    app.UseAuthentication();
+    app.UseHttpsRedirection();
+    app.UseRouting();
+
+    // CORS 
+    app.UseCors(builder => builder
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader());
+            
+    app.UseAuthentication(); 
     app.UseAuthorization();
 
-    app.MapControllers();
+    app.MapControllers(); 
+
+    // Verifica todas las rutas registradas (para debug)
+    app.Map("/routes", appBuilder =>
+    {
+        appBuilder.Run(async context =>
+        {
+            var endpointDataSource = context.RequestServices.GetRequiredService<EndpointDataSource>();
+            var sb = new StringBuilder();
+            sb.AppendLine("Registered Routes:");
+            foreach (var endpoint in endpointDataSource.Endpoints.OfType<RouteEndpoint>())
+            {
+                sb.AppendLine($"{endpoint.DisplayName} - {endpoint.RoutePattern.RawText}");
+            }
+            await context.Response.WriteAsync(sb.ToString());
+        });
+    });
 
     // Log de URLs de escucha
     var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
