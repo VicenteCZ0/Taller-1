@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using APITaller1.src.data;
 using APITaller1.src.models;
-using APITaller1.src.services;
+using APITaller1.src.Services;
 using APITaller1.src.Dtos;
 using APITaller1.src.Helpers; // Añadir esta referencia
 

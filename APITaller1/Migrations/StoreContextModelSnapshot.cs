@@ -454,7 +454,16 @@ namespace APITaller1.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("APITaller1.src.models.User", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.HasOne("APITaller1.src.models.User", null)
                         .WithMany()
@@ -499,11 +508,6 @@ namespace APITaller1.Migrations
             modelBuilder.Entity("APITaller1.src.models.Product", b =>
                 {
                     b.Navigation("ProductImages");
-                });
-
-            modelBuilder.Entity("APITaller1.src.models.Role", b =>
-                {
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("APITaller1.src.models.ShoppingCart", b =>

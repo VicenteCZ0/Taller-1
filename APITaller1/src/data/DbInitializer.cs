@@ -21,14 +21,14 @@ public class DbInitializer
 
         SeedData(context, userManager, roleManager).Wait();
     }
- 
+
     private static async Task SeedData(
         StoreContext context,
         UserManager<User> userManager,
         RoleManager<IdentityRole<int>> roleManager)
     {
         context.Database.Migrate();
-        
+
         // Crear los roles en la tabla legacy Role y en Identity
         var roleNames = new[] { "Admin", "User" };
 
@@ -39,7 +39,7 @@ public class DbInitializer
                 await roleManager.CreateAsync(new IdentityRole<int>(roleName));
             }
         }
-        
+
         // Crear usuario admin
         var adminEmail = "ignacio.mancilla@gmail.com";
         var admin = await userManager.FindByEmailAsync(adminEmail);
@@ -72,7 +72,7 @@ public class DbInitializer
                 await context.SaveChangesAsync();
             }
         }
-        
+
         // Crear usuarios de prueba
         if (!context.Users.Any(u => u.Email != adminEmail))
         {
@@ -108,13 +108,13 @@ public class DbInitializer
             }
             await context.SaveChangesAsync();
         }
-        
-        
+
+
         // Verificar si ya existen productos
         if (context.Products.Any()) return;
-        
+
         var faker2 = new Faker("es");
-        
+
         // Crear estados de producto
         var statusNames = new[] { "Active", "Inactive", "OutOfStock" };
         foreach (var statusName in statusNames)
@@ -125,15 +125,15 @@ public class DbInitializer
             }
         }
         await context.SaveChangesAsync();
-        
+
         // Obtener el ID del status "Active"
         var activeStatus = context.Status.FirstOrDefault(s => s.StatusName == "Active");
-        
+
         if (activeStatus == null)
             throw new InvalidOperationException("No se pudo encontrar el estado 'Active' después de guardarlo.");
-        
+
         var activeStatusId = activeStatus.StatusID;
-        
+
         // Generar productos
         var urls = new[]
         {
@@ -141,7 +141,7 @@ public class DbInitializer
             "https://res.cloudinary.com/demo/image/upload/sample2.jpg",
             "https://res.cloudinary.com/demo/image/upload/sample3.jpg"
         };
-        
+
         var productFaker = new Faker<Product>("es")
             .RuleFor(p => p.Name, f => f.Commerce.ProductName())
             .RuleFor(p => p.Category, f => f.Commerce.Department())
@@ -151,11 +151,11 @@ public class DbInitializer
             .RuleFor(p => p.Stock, f => f.Random.Int(10, 200))
             .RuleFor(p => p.StatusID, _ => activeStatusId)
             .RuleFor(p => p.CreatedAt, _ => DateTime.Now);
-        
+
         var products = productFaker.Generate(10);
         context.Products.AddRange(products);
         await context.SaveChangesAsync();
-        
+
         foreach (var product in products)
         {
             var image = new ProductImage
@@ -165,7 +165,42 @@ public class DbInitializer
             };
             context.ProductImages.Add(image);
         }
-        
+
         await context.SaveChangesAsync();
+        
+
+        foreach (var user in context.Users)
+        {
+            var existingCart = await context.ShoppingCarts.FirstOrDefaultAsync(c => c.UserID == user.Id);
+            if (existingCart == null)
+            {
+                var cart = new ShoppingCart
+                {
+                    UserID = user.Id,
+                    CartItems = new List<CartItem>()
+                };
+
+                // Elegir 3 productos aleatorios para agregar al carrito
+                var productsList = await context.Products.ToListAsync();
+                var randomProducts = productsList.OrderBy(p => Guid.NewGuid()).Take(3).ToList();
+
+
+                foreach (var product in randomProducts)
+                {
+                    cart.CartItems.Add(new CartItem
+                    {
+                        ProductID = product.ProductID,
+                        Quantity = 1
+                    });
+                }
+
+                context.ShoppingCarts.Add(cart);
+            }
+        }
+
+        await context.SaveChangesAsync();
+
+
+
     }
 }

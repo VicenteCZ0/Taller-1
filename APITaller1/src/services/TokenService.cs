@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity; 
 
-namespace APITaller1.src.services
+namespace APITaller1.src.Services
 {
     public class TokenService
     {
