@@ -22,16 +22,9 @@ public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
     public DbSet<ProductImage> ProductImages { get; set; }
     public DbSet<ShoppingCart> ShoppingCarts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
-
-/*
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     
-    
-    
-
-*/
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -47,6 +40,22 @@ public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<Order>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(o => o.UserID);
+
+        modelBuilder.Entity<OrderItem>()
+            .HasOne<Order>()
+            .WithMany()
+            .HasForeignKey(oi => oi.OrderID);
+        
+        modelBuilder.Entity<OrderItem>()
+            .HasOne<Product>()
+            .WithMany()
+            .HasForeignKey(oi => oi.ProductID);
+
+            
         /*
 
         // Configurar relación User - Order (uno a muchos)
