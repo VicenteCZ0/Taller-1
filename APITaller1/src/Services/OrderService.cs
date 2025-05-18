@@ -44,7 +44,16 @@ namespace APITaller1.src.Services
                 OrderItems = orderItems
             };
 
+            
             await _unitOfWork.OrderRepository.AddAsync(order);
+            await _unitOfWork.SaveChangeAsync();
+
+            foreach (var orderItem in orderItems)
+            {
+                orderItem.OrderID = order.ID;
+                await _unitOfWork.OrderItemRepository.AddAsync(orderItem);
+            }
+            
             await _unitOfWork.CartItemRepository.ClearCartAsync(cart.ID);
             await _unitOfWork.SaveChangeAsync();
 

@@ -65,6 +65,7 @@ try
     builder.Services.AddScoped<IProductRepository, ProductRepository>();
     builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
     builder.Services.AddScoped<IStatusRepository, StatusRepository>();
+    builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
     builder.Services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
     builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
     builder.Services.AddScoped<IOrderRepository, OrderRepository>();
