@@ -13,6 +13,8 @@ namespace APITaller1.src.data
         public IStatusRepository StatusRepository { get; }
         public IShoppingCartRepository ShoppingCartRepository { get; }
         public ICartItemRepository CartItemRepository { get; }
+        public IOrderRepository OrderRepository { get; }
+
 
         public UnitOfWork(
             StoreContext context,
@@ -21,7 +23,8 @@ namespace APITaller1.src.data
             IProductImageRepository productImageRepository,
             IStatusRepository statusRepository,
             IShoppingCartRepository shoppingCartRepository,
-            ICartItemRepository cartItemRepository
+            ICartItemRepository cartItemRepository,
+            IOrderRepository orderRepository
         )
         {
             _context = context;
@@ -31,6 +34,7 @@ namespace APITaller1.src.data
             StatusRepository = statusRepository;
             ShoppingCartRepository = shoppingCartRepository;
             CartItemRepository = cartItemRepository;
+            OrderRepository = orderRepository;
         }
 
         public async Task<int> SaveChangeAsync()
