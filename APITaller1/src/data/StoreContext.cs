@@ -5,19 +5,19 @@ using System.Threading.Tasks;
 
 using APITaller1.src.models;
 using Microsoft.EntityFrameworkCore;  
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace APITaller1.src.data;
 
-public class StoreContext : DbContext
+public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
-    public StoreContext(DbContextOptions options) : base(options)
+    public StoreContext(DbContextOptions<StoreContext> options) : base(options)
     {
     }
 
     public DbSet<Product> Products { get; set; }
-    public DbSet<User> Users { get; set; }
     public DbSet<ShippingAddress> ShippingAddress { get; set; }
-    public DbSet<Role> Roles { get; set; }
     public DbSet<Status> Status { get; set; }
     public DbSet<ProductImage> ProductImages { get; set; }
     public DbSet<ShoppingCart> ShoppingCarts { get; set; }
@@ -36,20 +36,14 @@ public class StoreContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configurar relación User - Role (uno a muchos)
-        modelBuilder.Entity<User>()
-            .HasOne(u => u.Role)
-            .WithMany(r => r.Users)
-            .HasForeignKey(u => u.RoleID);
-
         // Configurar relación User - ShippingAddres (uno a muchos)
         modelBuilder.Entity<ShippingAddress>(entity =>
         {
-            entity.HasKey(sa => sa.AddressID); // Definir explícitamente la clave primaria
+            entity.HasKey(sa => sa.AddressID);
             
             entity.HasOne(sa => sa.User)
-                .WithMany(u => u.ShippingAddress) // Asegúrate que User tenga esta propiedad
-                .HasForeignKey(sa => sa.UserId)
+                .WithOne(u => u.ShippingAddress) // ✅ uno a uno
+                .HasForeignKey<ShippingAddress>(sa => sa.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

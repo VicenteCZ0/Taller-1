@@ -3,43 +3,22 @@ using System;
 using APITaller1.src.data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace APITaller1.Migrations
+namespace APITaller1.data.migrations
 {
     [DbContext(typeof(StoreContext))]
-    partial class StoreContextModelSnapshot : ModelSnapshot
+    [Migration("20250517044109_AddIdentitySchema")]
+    partial class AddIdentitySchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.5");
-
-            modelBuilder.Entity("APITaller1.src.models.CartItem", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ProductID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ShoppingCartID")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("ProductID");
-
-                    b.HasIndex("ShoppingCartID");
-
-                    b.ToTable("CartItems");
-                });
 
             modelBuilder.Entity("APITaller1.src.models.Product", b =>
                 {
@@ -105,6 +84,21 @@ namespace APITaller1.Migrations
                     b.ToTable("ProductImages");
                 });
 
+            modelBuilder.Entity("APITaller1.src.models.Role", b =>
+                {
+                    b.Property<int>("RoleID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RolName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("RoleID");
+
+                    b.ToTable("Roles");
+                });
+
             modelBuilder.Entity("APITaller1.src.models.ShippingAddress", b =>
                 {
                     b.Property<int>("AddressID")
@@ -140,22 +134,6 @@ namespace APITaller1.Migrations
                         .IsUnique();
 
                     b.ToTable("ShippingAddress");
-                });
-
-            modelBuilder.Entity("APITaller1.src.models.ShoppingCart", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UserID")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("ShoppingCarts");
                 });
 
             modelBuilder.Entity("APITaller1.src.models.Status", b =>
@@ -239,6 +217,9 @@ namespace APITaller1.Migrations
                     b.Property<DateTime>("RegisteredAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("RoleID")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
 
@@ -261,6 +242,8 @@ namespace APITaller1.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("RoleID");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -391,25 +374,6 @@ namespace APITaller1.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("APITaller1.src.models.CartItem", b =>
-                {
-                    b.HasOne("APITaller1.src.models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APITaller1.src.models.ShoppingCart", "ShoppingCart")
-                        .WithMany("CartItems")
-                        .HasForeignKey("ShoppingCartID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("ShoppingCart");
-                });
-
             modelBuilder.Entity("APITaller1.src.models.Product", b =>
                 {
                     b.HasOne("APITaller1.src.models.Status", "Status")
@@ -443,18 +407,27 @@ namespace APITaller1.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("APITaller1.src.models.ShoppingCart", b =>
+            modelBuilder.Entity("APITaller1.src.models.User", b =>
                 {
-                    b.HasOne("APITaller1.src.models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID")
+                    b.HasOne("APITaller1.src.models.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("APITaller1.src.models.User", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
                     b.HasOne("APITaller1.src.models.User", null)
                         .WithMany()
@@ -504,11 +477,6 @@ namespace APITaller1.Migrations
             modelBuilder.Entity("APITaller1.src.models.Role", b =>
                 {
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("APITaller1.src.models.ShoppingCart", b =>
-                {
-                    b.Navigation("CartItems");
                 });
 
             modelBuilder.Entity("APITaller1.src.models.User", b =>
