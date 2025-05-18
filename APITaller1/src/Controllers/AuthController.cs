@@ -1,13 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using APITaller1.src.data;
 using APITaller1.src.models;
 using APITaller1.src.Services;
 using APITaller1.src.Dtos;
 using APITaller1.src.Helpers; // Añadir esta referencia
 
-namespace APITaller1.src.Controllers.UserControllers
+namespace APITaller1.src.Controllers
 {
     [ApiController]
     [Route("api/auth")]
@@ -16,15 +18,30 @@ namespace APITaller1.src.Controllers.UserControllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly TokenService _tokenService;
+        private readonly ILogger<AuthController> _logger;
+        private readonly UnitOfWork _context;
 
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            TokenService tokenService)
+            TokenService tokenService,
+            ILogger<AuthController> logger,
+            UnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _logger = logger;
+            _context = unitOfWork;
+        }
+
+        private async Task<User?> GetCurrentUserAsync()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim))
+                return null;
+
+            return await _userManager.FindByIdAsync(userIdClaim);
         }
 
         [HttpPost("login")]
@@ -35,6 +52,10 @@ namespace APITaller1.src.Controllers.UserControllers
             if (user == null)
                 return Unauthorized(new ApiResponse<string>(false, "Correo o contraseña inválidos"));
 
+            // Validar si la cuenta está deshabilitada
+            if (!user.AccountStatus)
+                return Unauthorized(new ApiResponse<string>(false, "Cuenta deshabilitada. Contacte al administrador."));
+
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (!result.Succeeded)
@@ -43,12 +64,11 @@ namespace APITaller1.src.Controllers.UserControllers
             user.LastLogin = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            // CAMBIO AQUÍ: Añadir await
             var token = await _tokenService.CreateToken(user);
-            
+
             return Ok(new ApiResponse<object>(
-                true, 
-                "Inicio de sesión exitoso", 
+                true,
+                "Inicio de sesión exitoso",
                 new { token }
             ));
         }
@@ -62,15 +82,15 @@ namespace APITaller1.src.Controllers.UserControllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-                    
+
                 return BadRequest(new ApiResponse<string>(
-                    false, 
-                    "Datos inválidos", 
-                    null, 
+                    false,
+                    "Datos inválidos",
+                    null,
                     errors
                 ));
             }
-            
+
             var userExists = await _userManager.FindByEmailAsync(dto.Email);
             if (userExists != null)
                 return BadRequest(new ApiResponse<string>(false, "El correo electrónico ya está en uso."));
@@ -92,17 +112,16 @@ namespace APITaller1.src.Controllers.UserControllers
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
                 return BadRequest(new ApiResponse<string>(
-                    false, 
-                    "Error al crear el usuario", 
-                    null, 
+                    false,
+                    "Error al crear el usuario",
+                    null,
                     errors
                 ));
             }
 
             await _userManager.AddToRoleAsync(user, "User");
 
-            // Puedes crear un DTO específico para devolver solo la información necesaria
-            var userData = new 
+            var userData = new
             {
                 Id = user.Id,
                 Email = user.Email,
@@ -111,10 +130,16 @@ namespace APITaller1.src.Controllers.UserControllers
             };
 
             return Ok(new ApiResponse<object>(
-                true, 
-                "Usuario registrado exitosamente", 
+                true,
+                "Usuario registrado exitosamente",
                 userData
             ));
+        }
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            return Ok(new ApiResponse<string>(true, "Sesión cerrada exitosamente."));
         }
     }
 }

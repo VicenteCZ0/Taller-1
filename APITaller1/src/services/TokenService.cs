@@ -26,7 +26,8 @@ namespace APITaller1.src.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.UserName)
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()) 
             };
 
             claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
