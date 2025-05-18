@@ -31,10 +31,10 @@ namespace APITaller1.src.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddItem([FromBody] CartItemCreationDto dto)
+        public async Task<IActionResult> AddItem([FromBody] CartItemCreationDto body)
         {
             var userId = GetUserIdFromClaims();
-            await _cartItemService.AddItemAsync(userId, dto);
+            await _cartItemService.AddItemAsync(userId, body);
             return Ok(new { message = "Producto agregado al carrito" });
         }
 

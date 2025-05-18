@@ -137,7 +137,7 @@ try
         var serverAddresses = app.Urls;
         foreach (var address in serverAddresses)
         {
-            Console.WriteLine($"✅ Server is listening on: {address}");
+            Console.WriteLine($"Server is listening on: {address}");
         }
     });
 
@@ -146,7 +146,7 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "Server terminated unexpectedly");
-    Console.WriteLine("❌ ERROR DETALLES: " + ex);
+    Console.WriteLine(" ERROR DETALLES: " + ex);
 }
 finally
 {

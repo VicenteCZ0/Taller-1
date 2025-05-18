@@ -42,7 +42,7 @@ public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
             entity.HasKey(sa => sa.AddressID);
             
             entity.HasOne(sa => sa.User)
-                .WithOne(u => u.ShippingAddress) // ✅ uno a uno
+                .WithOne(u => u.ShippingAddress) // 
                 .HasForeignKey<ShippingAddress>(sa => sa.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
