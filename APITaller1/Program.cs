@@ -1,54 +1,143 @@
 using Microsoft.EntityFrameworkCore;
-using APITaller1.src.data;
-using APITaller1.src.Repositories;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Text;
+
+using APITaller1.src.data;
 using APITaller1.src.interfaces;
+using APITaller1.src.Repositories;
+using APITaller1.src.Services;
+using APITaller1.src.models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Establecer URLs de escucha
 builder.WebHost.UseUrls("https://localhost:7283", "http://localhost:5000");
 
-// Configura Serilog leyendo del archivo appsettings.json (si tienes uno)
+// Configurar Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
-    .WriteTo.Console() // <-- Agrega esto
-    .Enrich.FromLogContext()    
+    .WriteTo.Console()
+    .Enrich.FromLogContext()
+    .Enrich.WithThreadId()
+    .Enrich.WithMachineName()
     .CreateLogger();
 
 builder.Host.UseSerilog((context, services, configuration) =>
 {
     configuration
         .ReadFrom.Configuration(context.Configuration)
-        .WriteTo.Console() // <-- Asegúrate que esto esté aquí también
+        .WriteTo.Console()
         .Enrich.FromLogContext()
         .Enrich.WithThreadId()
         .Enrich.WithMachineName();
-});// <-- conecta Serilog con ASP.NET Core
+});
+
 try
 {
-    Log.Information("starting server.");
-    //var builder = WebApplication.CreateBuilder(args);
+    Log.Information("Starting server...");
+
+    // Agregar servicios básicos
     builder.Services.AddControllers();
+
+    builder.Services.Configure<RouteOptions>(options =>
+    {
+        options.LowercaseUrls = true;
+        options.LowercaseQueryStrings = true;
+        options.AppendTrailingSlash = false;
+    });
+
+    // DbContext
     builder.Services.AddDbContext<StoreContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    // Identity
+    builder.Services.AddIdentity<User, IdentityRole<int>>()
+        .AddEntityFrameworkStores<StoreContext>()
+        .AddDefaultTokenProviders();
+
+    builder.Services.AddScoped<PasswordHasher<User>>();
+
+    // Repositorios
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IProductRepository, ProductRepository>();
-    builder.Services.AddScoped<IRoleRepository, RoleRepository>();
     builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
     builder.Services.AddScoped<IStatusRepository, StatusRepository>();
-    builder.Services.AddScoped<UnitOfWork>();
-    var app = builder.Build();
-    DbInitializer.InitDb(app);
-    app.MapControllers();
+    builder.Services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
+    builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 
-    // Imprimir las URLs correctamente DESPUÉS de iniciar el servidor
+    // Servicios adicionales
+    builder.Services.AddScoped<CartItemService>();
+    builder.Services.AddScoped<TokenService>();
+
+    // Unit of Work
+    builder.Services.AddScoped<UnitOfWork>();
+
+    // Autenticación JWT
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        var key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:SignInKey"]);
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JWT:Issuer"],
+            ValidAudience = builder.Configuration["JWT:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key)
+        };
+    });
+    var app = builder.Build();
+
+    // Inicialización de la base de datos
+    DbInitializer.InitDb(app);
+
+    app.UseHttpsRedirection();
+    app.UseRouting();
+
+    // CORS 
+    app.UseCors(builder => builder
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader());
+            
+    app.UseAuthentication(); 
+    app.UseAuthorization();
+
+    app.MapControllers(); 
+
+    // Verifica todas las rutas registradas (para debug)
+    app.Map("/routes", appBuilder =>
+    {
+        appBuilder.Run(async context =>
+        {
+            var endpointDataSource = context.RequestServices.GetRequiredService<EndpointDataSource>();
+            var sb = new StringBuilder();
+            sb.AppendLine("Registered Routes:");
+            foreach (var endpoint in endpointDataSource.Endpoints.OfType<RouteEndpoint>())
+            {
+                sb.AppendLine($"{endpoint.DisplayName} - {endpoint.RoutePattern.RawText}");
+            }
+            await context.Response.WriteAsync(sb.ToString());
+        });
+    });
+
+    // Log de URLs de escucha
     var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
     lifetime.ApplicationStarted.Register(() =>
     {
         var serverAddresses = app.Urls;
         foreach (var address in serverAddresses)
         {
-            Console.WriteLine($"✅ Server is listening on: {address}");
+            Console.WriteLine($"Server is listening on: {address}");
         }
     });
 
@@ -56,8 +145,8 @@ try
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "server terminated unexpectedly");
-    Console.WriteLine("ERROR DETALLES: " + ex.ToString());
+    Log.Fatal(ex, "Server terminated unexpectedly");
+    Console.WriteLine(" ERROR DETALLES: " + ex);
 }
 finally
 {

@@ -3,24 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Identity;
+
 namespace APITaller1.src.models
 {
-    public class User
+    public class User : IdentityUser<int>
     {
-        public int UserID { get; set; }
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
-        public required string Email { get; set; }
-        public required string Password { get; set; }
         public required string Telephone { get; set; }
-        public DateTime DateOfBirth { get; set; }
-        public bool AccountStatus { get; set; } 
+        public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
         public DateTime LastLogin { get; set; }
-        public int RoleID { get; set; }
-        // Navigation properties
-        public ICollection<ShippingAddress> ShippingAddress { get; set; } = new List<ShippingAddress>();
-
-        public required Role Role { get; set; }
+        public bool AccountStatus { get; set; }
+        public string? DeactivationReason { get; set; }
+        public DateTime DateOfBirth { get; set; }
         
-    }
+        
+        // Navigation property to ShippingAddress
+        public ShippingAddress? ShippingAddress { get; set; }
+    }  
 }

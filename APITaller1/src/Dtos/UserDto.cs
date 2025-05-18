@@ -14,9 +14,9 @@ namespace APITaller1.src.Dtos
         public required string Telephone { get; set; }
         public DateTime DateOfBirth { get; set; }
         public bool AccountStatus { get; set; }
+        public DateTime RegisteredAt { get; set; }
         public DateTime LastLogin { get; set; }
-        public required string RoleName { get; set; }
-        public List<ShippingAddressDto> ShippingAddresses { get; set; } = new();
+        public string? DeactivationReason { get; set; }
+        public ShippingAddressDto? ShippingAddress { get; set; }
     }
-
 }

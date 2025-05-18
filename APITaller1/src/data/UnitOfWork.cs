@@ -1,32 +1,41 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-
 using APITaller1.src.interfaces;
 
-namespace APITaller1.src.data;
-
-public class UnitOfWork(
-    StoreContext context,
-    IProductRepository productRepository,
-    IUserRepository userRepository,
-    IRoleRepository roleRepository,
-    IProductImageRepository productImageRepository,
-    IStatusRepository statusRepository)
+namespace APITaller1.src.data
 {
-    private readonly StoreContext _context = context;
-
-    public IUserRepository UserRepository { get; set; } = userRepository;
-    public IProductRepository ProductRepository { get; set; } = productRepository;
-    public IRoleRepository RoleRepository { get; set; } = roleRepository;
-
-    public IProductImageRepository ProductImageRepository { get; set; } = productImageRepository;
-
-    public IStatusRepository StatusRepository { get; set; } = statusRepository;
-
-    public async Task SaveChangeAsync()
+    public class UnitOfWork
     {
-        await _context.SaveChangesAsync();
+        private readonly StoreContext _context;
+
+        public IUserRepository UserRepository { get; }
+        public IProductRepository ProductRepository { get; }
+        public IProductImageRepository ProductImageRepository { get; }
+        public IStatusRepository StatusRepository { get; }
+        public IShoppingCartRepository ShoppingCartRepository { get; }
+        public ICartItemRepository CartItemRepository { get; }
+
+        public UnitOfWork(
+            StoreContext context,
+            IUserRepository userRepository,
+            IProductRepository productRepository,
+            IProductImageRepository productImageRepository,
+            IStatusRepository statusRepository,
+            IShoppingCartRepository shoppingCartRepository,
+            ICartItemRepository cartItemRepository
+        )
+        {
+            _context = context;
+            UserRepository = userRepository;
+            ProductRepository = productRepository;
+            ProductImageRepository = productImageRepository;
+            StatusRepository = statusRepository;
+            ShoppingCartRepository = shoppingCartRepository;
+            CartItemRepository = cartItemRepository;
+        }
+
+        public async Task<int> SaveChangeAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
     }
 }

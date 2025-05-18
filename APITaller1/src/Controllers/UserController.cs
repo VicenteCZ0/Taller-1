@@ -1,17 +1,45 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
 using APITaller1.src.data;
 using APITaller1.src.Dtos;
 using APITaller1.src.models;
+using Microsoft.EntityFrameworkCore;
 
 namespace APITaller1.src.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class UserController(ILogger<UserController> logger, UnitOfWork unitOfWork) : BaseController
+    [Route("api/user")]
+    public class UserController : BaseController
     {
-        private readonly ILogger<UserController> _logger = logger;
-        private readonly UnitOfWork _context = unitOfWork;
+        private readonly ILogger<UserController> _logger;
+        private readonly UnitOfWork _context;
+        private readonly UserManager<User> _userManager;
 
+        public UserController(
+            ILogger<UserController> logger,
+            UnitOfWork unitOfWork,
+            UserManager<User> userManager)
+        {
+            _logger = logger;
+            _context = unitOfWork;
+            _userManager = userManager;
+        }
+
+        private async Task<User?> GetCurrentUserAsync()
+        {
+            var email = User.Identity?.Name;
+            return await _userManager.FindByEmailAsync(email);
+        }
+
+        private string? GetCurrentUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+
+        // GET /api/user
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -19,45 +47,120 @@ namespace APITaller1.src.Controllers
             return Ok(users);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateUser(CreateUserDto userDto)
+        [HttpGet("debug")]
+        [Authorize]
+        public IActionResult DebugClaims()
         {
-            if (userDto.ConfirmPassword != userDto.Password)
-            {
-                return BadRequest("Passwords do not match");
-            }
+            return Ok(User.Claims.Select(c => new { c.Type, c.Value }));
+        }
 
-            var role = await _context.RoleRepository.GetRoleByIdAsync(userDto.RoleID);
-            if (role == null)
-            {
-                return BadRequest("Invalid Role ID");
-            }
+        [HttpGet("test")]
+        [Authorize]
+        public IActionResult Test()
+        {
+            return Ok("Autenticación exitosa.");
+        }
 
-            var user = new User
+        [HttpGet("test-auth")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public IActionResult TestAuth()
+        {
+            return Ok("Token válido");
+        }
+
+        // GET /api/user/me
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var user = await _userManager.Users
+                .Include(u => u.ShippingAddress)
+                .FirstOrDefaultAsync(u => u.Id == int.Parse(GetCurrentUserId()));
+
+            if (user == null)
+                return NotFound("Usuario no encontrado.");
+
+            return Ok(new
             {
-                FirstName = userDto.FirstName,
-                LastName = userDto.LastName,
-                Email = userDto.Email,
-                Password = userDto.Password,
-                Telephone = userDto.Telephone,
-                RoleID = userDto.RoleID,
-                Role = role,
-                ShippingAddress = new List<ShippingAddress>
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                user.Telephone,
+                user.DateOfBirth,
+                Address = user.ShippingAddress != null ? new
                 {
-                    new ShippingAddress
-                    {
-                        Street = userDto.Street ?? string.Empty,
-                        Number = userDto.Number ?? string.Empty,
-                        Commune = userDto.Commune ?? string.Empty,
-                        Region = userDto.Region ?? string.Empty,
-                        PostalCode = userDto.PostalCode ?? string.Empty
-                    }
-                }
-            };
+                    user.ShippingAddress.Street,
+                    user.ShippingAddress.Number,
+                    user.ShippingAddress.Commune,
+                    user.ShippingAddress.Region,
+                    user.ShippingAddress.PostalCode
+                } : null
+            });
+        }
 
-            await _context.UserRepository.CreateUserAsync(user, user.ShippingAddress.FirstOrDefault());
-            await _context.SaveChangeAsync();
-            return Ok(user);
+        // PUT /api/user/me
+        [HttpPut("me")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+                return NotFound("Usuario no encontrado.");
+
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.Telephone = dto.Telephone;
+            user.DateOfBirth = dto.DateOfBirth;
+
+            await _userManager.UpdateAsync(user);
+            return Ok("Perfil actualizado correctamente.");
+        }
+
+        // PUT /api/user/me/password
+        [HttpPut("me/password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+                return NotFound("Usuario no encontrado.");
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors.Select(e => e.Description));
+
+            return Ok("Contraseña actualizada correctamente.");
+        }
+
+        // PUT /api/user/me/address
+        [HttpPut("me/address")]
+        [Authorize]
+        public async Task<IActionResult> UpdateAddress([FromBody] UpdateAddressDto dto)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+                return NotFound("Usuario no encontrado.");
+
+            if (user.ShippingAddress == null)
+                user.ShippingAddress = new ShippingAddress
+                {
+                    Street = dto.Street,
+                    Number = dto.Number,
+                    Commune = dto.Commune,
+                    Region = dto.Region,
+                    PostalCode = dto.PostalCode
+                };
+            else
+            {
+                user.ShippingAddress.Street = dto.Street;
+                user.ShippingAddress.Number = dto.Number;
+                user.ShippingAddress.Commune = dto.Commune;
+                user.ShippingAddress.Region = dto.Region;
+                user.ShippingAddress.PostalCode = dto.PostalCode;
+            }
+
+            await _userManager.UpdateAsync(user);
+            return Ok("Dirección actualizada correctamente.");
         }
     }
 }
