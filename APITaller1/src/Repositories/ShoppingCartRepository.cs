@@ -27,7 +27,7 @@ public class ShoppingCartRepository : IShoppingCartRepository
     return await _context.ShoppingCarts
     .Include(sc => sc.CartItems)
     .ThenInclude(ci => ci.Product)
-    .FirstOrDefaultAsync(sc => sc.UserID == userId); 
+    .FirstOrDefaultAsync(sc => sc.UserId == userId); 
 }
 
 
@@ -40,7 +40,7 @@ public class ShoppingCartRepository : IShoppingCartRepository
             
             cart = new ShoppingCart
             {
-                UserID = userId,
+                UserId = userId,
                 CartItems = new List<CartItem>()
             };
 

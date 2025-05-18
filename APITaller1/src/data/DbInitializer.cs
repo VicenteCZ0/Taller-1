@@ -166,39 +166,41 @@ public class DbInitializer
             context.ProductImages.Add(image);
         }
 
-        await context.SaveChangesAsync();
-        
+        var productsList = await context.Products.ToListAsync();
 
         foreach (var user in context.Users)
         {
-            var existingCart = await context.ShoppingCarts.FirstOrDefaultAsync(c => c.UserID == user.Id);
+            var existingCart = await context.ShoppingCarts.FirstOrDefaultAsync(c => c.UserId == user.Id);
             if (existingCart == null)
             {
+                // Paso 1: Crear y guardar el carrito
                 var cart = new ShoppingCart
                 {
-                    UserID = user.Id,
-                    CartItems = new List<CartItem>()
+                    UserId = user.Id,
+                    User = user
                 };
+                user.ShoppingCart = cart;
 
-                // Elegir 3 productos aleatorios para agregar al carrito
-                var productsList = await context.Products.ToListAsync();
+                context.ShoppingCarts.Add(cart);
+                await context.SaveChangesAsync();
+
+                // Paso 2: Crear ítems con el ShoppingCartID asignado
+                
                 var randomProducts = productsList.OrderBy(p => Guid.NewGuid()).Take(3).ToList();
-
 
                 foreach (var product in randomProducts)
                 {
-                    cart.CartItems.Add(new CartItem
+                    context.CartItems.Add(new CartItem
                     {
+                        ShoppingCartID = cart.ID,
                         ProductID = product.ProductID,
                         Quantity = 1
                     });
                 }
-
-                context.ShoppingCarts.Add(cart);
             }
         }
-
         await context.SaveChangesAsync();
+
 
 
 

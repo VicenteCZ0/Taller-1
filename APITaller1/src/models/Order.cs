@@ -11,7 +11,7 @@ namespace APITaller1.src.models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Status { get; set; } = "Pending"; 
         public decimal TotalAmount { get; set; }
-        public int UserID { get; set; }
+        public int UserId { get; set; }
         public User User { get; set; } = null!;
 
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

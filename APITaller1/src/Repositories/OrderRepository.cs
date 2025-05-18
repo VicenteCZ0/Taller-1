@@ -22,7 +22,7 @@ namespace APITaller1.src.Repositories
             return await _context.Orders
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
-                .Where(o => o.UserID == userId)
+                .Where(o => o.UserId == userId)
                 .ToListAsync();
         }
 

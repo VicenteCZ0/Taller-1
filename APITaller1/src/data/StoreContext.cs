@@ -43,7 +43,7 @@ public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
         modelBuilder.Entity<Order>()
             .HasOne<User>()
             .WithMany()
-            .HasForeignKey(o => o.UserID);
+            .HasForeignKey(o => o.UserId);
 
         modelBuilder.Entity<OrderItem>()
             .HasOne<Order>()
@@ -57,21 +57,25 @@ public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
 
         // Configurar relación User - ShoppingCart (uno a muchos)
         modelBuilder.Entity<ShoppingCart>()
-            .HasOne<User>()
-            .WithMany()
-            .HasForeignKey(sc => sc.UserID);
+            .HasOne(sc => sc.User)
+            .WithOne(u => u.ShoppingCart)
+            .HasForeignKey<ShoppingCart>(sc => sc.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
 
         // Configurar relación ShoppingCart - CartItem (uno a muchos)
         modelBuilder.Entity<CartItem>()
-            .HasOne<ShoppingCart>()
-            .WithMany()
-            .HasForeignKey(ci => ci.ShoppingCartID);
+            .HasOne(ci => ci.ShoppingCart)
+            .WithMany(sc => sc.CartItems)
+            .HasForeignKey(ci => ci.ShoppingCartID)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Configurar relación Product - CartItem (uno a muchos)
         modelBuilder.Entity<CartItem>()
-            .HasOne<Product>()
-            .WithMany()
-            .HasForeignKey(ci => ci.ProductID);
+            .HasOne(ci => ci.Product)
+            .WithMany() 
+            .HasForeignKey(ci => ci.ProductID)
+            .OnDelete(DeleteBehavior.Restrict);
 
 
         // Configurar relación Product - ProductImage (uno a muchos)

@@ -37,7 +37,7 @@ namespace APITaller1.src.Services
 
             var order = new Order
             {
-                UserID = userId,
+                UserId = userId,
                 CreatedAt = DateTime.UtcNow,
                 Status = "Pendiente",
                 TotalAmount = total,

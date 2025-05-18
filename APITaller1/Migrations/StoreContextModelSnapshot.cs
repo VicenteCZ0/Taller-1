@@ -26,27 +26,17 @@ namespace APITaller1.Migrations
                     b.Property<int>("ProductID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ProductID1")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("ShoppingCartID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ShoppingCartID1")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("ID");
 
                     b.HasIndex("ProductID");
 
-                    b.HasIndex("ProductID1");
-
                     b.HasIndex("ShoppingCartID");
-
-                    b.HasIndex("ShoppingCartID1");
 
                     b.ToTable("CartItems");
                 });
@@ -67,17 +57,17 @@ namespace APITaller1.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("UserID")
+                    b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("UserId1")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserID");
-
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Orders");
                 });
@@ -226,17 +216,13 @@ namespace APITaller1.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserID");
-
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("ShoppingCarts");
                 });
@@ -476,27 +462,15 @@ namespace APITaller1.Migrations
 
             modelBuilder.Entity("APITaller1.src.models.CartItem", b =>
                 {
-                    b.HasOne("APITaller1.src.models.Product", null)
-                        .WithMany()
-                        .HasForeignKey("ProductID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("APITaller1.src.models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductID1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APITaller1.src.models.ShoppingCart", null)
-                        .WithMany()
-                        .HasForeignKey("ShoppingCartID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("APITaller1.src.models.ShoppingCart", "ShoppingCart")
                         .WithMany("CartItems")
-                        .HasForeignKey("ShoppingCartID1")
+                        .HasForeignKey("ShoppingCartID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -509,13 +483,13 @@ namespace APITaller1.Migrations
                 {
                     b.HasOne("APITaller1.src.models.User", null)
                         .WithMany()
-                        .HasForeignKey("UserID")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("APITaller1.src.models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -588,15 +562,9 @@ namespace APITaller1.Migrations
 
             modelBuilder.Entity("APITaller1.src.models.ShoppingCart", b =>
                 {
-                    b.HasOne("APITaller1.src.models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("APITaller1.src.models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("ShoppingCart")
+                        .HasForeignKey("APITaller1.src.models.ShoppingCart", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -672,6 +640,8 @@ namespace APITaller1.Migrations
             modelBuilder.Entity("APITaller1.src.models.User", b =>
                 {
                     b.Navigation("ShippingAddress");
+
+                    b.Navigation("ShoppingCart");
                 });
 #pragma warning restore 612, 618
         }
