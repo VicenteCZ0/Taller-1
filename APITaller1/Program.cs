@@ -10,6 +10,7 @@ using APITaller1.src.interfaces;
 using APITaller1.src.Repositories;
 using APITaller1.src.Services;
 using APITaller1.src.models;
+using APITaller1.src.middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +72,7 @@ try
     builder.Services.AddScoped<IOrderRepository, OrderRepository>();
     builder.Services.AddScoped<IPhotoService, PhotoService>();
     builder.Services.AddScoped<OrderService>();
+    builder.Services.AddTransient<ExceptionMiddleware>();
 
     // Servicios adicionales
     builder.Services.AddScoped<CartItemService>();
@@ -106,6 +108,7 @@ try
 
     app.UseHttpsRedirection();
     app.UseRouting();
+    app.UseMiddleware<ExceptionMiddleware>();
 
     // CORS 
     app.UseCors(builder => builder
