@@ -15,6 +15,8 @@ namespace APITaller1.src.interfaces
     Task AddAsync(ShoppingCart cart);
 
     Task<ShoppingCart> GetByUserIdWithItemsAndProductsAsync(int userId);
+
+    Task<ShoppingCart> GetByUserIdWithItemsAsync(int userId);
 }
 
 }

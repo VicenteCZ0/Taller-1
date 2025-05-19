@@ -22,15 +22,16 @@ namespace APITaller1.src.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateOrder()
+        public async Task<ActionResult<OrderDto>> CreateOrder()
         {
             var userId = GetUserIdFromClaims();
-            var order = await _orderService.CreateOrderAsync(userId);
-            return Ok(order);
+            var orderDto = await _orderService.CreateOrderAsync(userId);
+            return Ok(orderDto);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOrders()
+        [Authorize]
+        public async Task<ActionResult<List<OrderDto>>> GetOrders()
         {
             var userId = GetUserIdFromClaims();
             var orders = await _orderService.GetOrdersByUserAsync(userId);
@@ -39,10 +40,10 @@ namespace APITaller1.src.Controllers
 
         private int GetUserIdFromClaims()
         {
-            var claim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub");
+            var claim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (claim == null)
             {
-                return 1; 
+                throw new UnauthorizedAccessException("Usuario no autenticado");
             }
             return int.Parse(claim.Value);
         }

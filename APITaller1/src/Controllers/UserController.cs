@@ -34,10 +34,16 @@ namespace APITaller1.src.Controllers
             return await _userManager.FindByEmailAsync(email);
         }
 
-        private string? GetCurrentUserId()
+        private int GetCurrentUserId()
         {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(claim, out int userId))
+            {
+                return userId;
+            }
+            throw new UnauthorizedAccessException("ID de usuario no válido");
         }
+
 
         // GET /api/user
         [HttpGet]
@@ -73,29 +79,38 @@ namespace APITaller1.src.Controllers
         [Authorize]
         public async Task<IActionResult> GetProfile()
         {
-            var user = await _userManager.Users
-                .Include(u => u.ShippingAddress)
-                .FirstOrDefaultAsync(u => u.Id == int.Parse(GetCurrentUserId()));
-
-            if (user == null)
-                return NotFound("Usuario no encontrado.");
-
-            return Ok(new
+            try
             {
-                user.FirstName,
-                user.LastName,
-                user.Email,
-                user.Telephone,
-                user.DateOfBirth,
-                Address = user.ShippingAddress != null ? new
-                {
-                    user.ShippingAddress.Street,
-                    user.ShippingAddress.Number,
-                    user.ShippingAddress.Commune,
-                    user.ShippingAddress.Region,
-                    user.ShippingAddress.PostalCode
-                } : null
-            });
+                int userId = GetCurrentUserId();
+
+                var user = await _userManager.Users
+                    .Include(u => u.ShippingAddress)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                return user == null 
+                    ? NotFound("Usuario no encontrado.") 
+                    : Ok(new
+                    {
+                        user.FirstName,
+                        user.LastName,
+                        user.Email,
+                        user.Telephone,
+                        user.DateOfBirth,
+                        Address = user.ShippingAddress != null ? new
+                        {
+                            user.ShippingAddress.Street,
+                            user.ShippingAddress.Number,
+                            user.ShippingAddress.Commune,
+                            user.ShippingAddress.Region,
+                            user.ShippingAddress.PostalCode
+                        } : null
+                    });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener perfil de usuario");
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
 
         // PUT /api/user/me
@@ -137,19 +152,24 @@ namespace APITaller1.src.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateAddress([FromBody] UpdateAddressDto dto)
         {
-            var user = await GetCurrentUserAsync();
+            var userId = GetCurrentUserId();
+            var user = await _context.UserRepository.GetUserWithShippingAddressAsync(userId);
+            
             if (user == null)
                 return NotFound("Usuario no encontrado.");
 
             if (user.ShippingAddress == null)
+            {
                 user.ShippingAddress = new ShippingAddress
                 {
                     Street = dto.Street,
                     Number = dto.Number,
                     Commune = dto.Commune,
                     Region = dto.Region,
-                    PostalCode = dto.PostalCode
+                    PostalCode = dto.PostalCode,
+                    UserId = user.Id
                 };
+            }
             else
             {
                 user.ShippingAddress.Street = dto.Street;
@@ -159,7 +179,10 @@ namespace APITaller1.src.Controllers
                 user.ShippingAddress.PostalCode = dto.PostalCode;
             }
 
-            await _userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors.Select(e => e.Description));
+
             return Ok("Dirección actualizada correctamente.");
         }
     }

@@ -26,5 +26,7 @@ namespace APITaller1.src.interfaces
 
         Task<Product?> GetByIdAsync(int id);
 
+        Task<bool> Exists(int productId);
+
     }
 }

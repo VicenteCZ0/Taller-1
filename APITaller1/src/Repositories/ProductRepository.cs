@@ -161,4 +161,9 @@ public class ProductRepository : IProductRepository
 
         return await PagedList<Product>.CreateAsync(query, queryParams.PageNumber, queryParams.PageSize);
     }
+
+    public async Task<bool> Exists(int productId)
+    {
+        return await _context.Products.AnyAsync(p => p.ProductID == productId);
+    }
 }

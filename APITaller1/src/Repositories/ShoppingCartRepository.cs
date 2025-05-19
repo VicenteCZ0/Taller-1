@@ -55,13 +55,20 @@ public class ShoppingCartRepository : IShoppingCartRepository
     {
         await _context.ShoppingCarts.AddAsync(cart);
     }
-    
+
 
     public async Task<ShoppingCart> GetByUserIdWithItemsAndProductsAsync(int userId)
     {
         return await _context.ShoppingCarts
             .Include(sc => sc.CartItems)
                 .ThenInclude(ci => ci.Product)
+            .FirstOrDefaultAsync(sc => sc.UserId == userId);
+    }
+    
+    public async Task<ShoppingCart> GetByUserIdWithItemsAsync(int userId)
+    {
+        return await _context.ShoppingCarts
+            .Include(sc => sc.CartItems)
             .FirstOrDefaultAsync(sc => sc.UserId == userId);
     }
 

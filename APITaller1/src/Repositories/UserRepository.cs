@@ -37,7 +37,7 @@ namespace APITaller1.src.Repositories
             }
             _context.Users.Remove(user);
         }
-        
+
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             var users = await _context.Users
@@ -129,6 +129,13 @@ namespace APITaller1.src.Repositories
         public async Task<bool> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync() > 0;
+        }
+        
+        public async Task<User> GetUserWithShippingAddressAsync(int userId)
+        {
+            return await _context.Users
+                .Include(u => u.ShippingAddress)
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
     }
 }

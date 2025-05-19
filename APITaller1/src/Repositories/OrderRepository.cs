@@ -17,7 +17,7 @@ namespace APITaller1.src.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Order>> GetByUserAsync(int userId)
+        public async Task<List<Order>> GetByUserAsync(int userId)
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)

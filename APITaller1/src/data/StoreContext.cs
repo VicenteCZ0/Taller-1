@@ -29,6 +29,12 @@ public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<User>()
+        .HasOne(u => u.ShippingAddress)
+        .WithOne(a => a.User)
+        .HasForeignKey<ShippingAddress>(a => a.UserId)
+        .IsRequired(false); // Permite que un usuario no tenga dirección
+
         // Configurar relación User - ShippingAddres (uno a muchos)
         modelBuilder.Entity<ShippingAddress>(entity =>
         {

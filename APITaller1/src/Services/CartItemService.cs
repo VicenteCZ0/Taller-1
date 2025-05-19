@@ -69,14 +69,26 @@ namespace APITaller1.src.Services
 
         public async Task RemoveItemAsync(int userId, int productId)
         {
-            var cart = await _unitOfWork.ShoppingCartRepository.GetByUserIdAsync(userId);
-            if (cart == null) throw new Exception("Carrito no encontrado");
+            var cart = await _unitOfWork.ShoppingCartRepository
+                .GetByUserIdWithItemsAsync(userId);
+            
+            if (cart?.CartItems == null || !cart.CartItems.Any())
+            {
+                throw new Exception("El carrito está vacío");
+            }
 
-            var item = await _unitOfWork.CartItemRepository
-                .GetByCartAndProductAsync(cart.ID, productId);
-            if (item == null) throw new Exception("Producto no encontrado en el carrito");
+            var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductID == productId);
+            
+            if (cartItem == null)
+            {
+                // Verificar si el producto existe
+                var productExists = await _unitOfWork.ProductRepository.Exists(productId);
+                throw new Exception(productExists 
+                    ? $"El producto {productId} no está en tu carrito"
+                    : $"El producto {productId} no existe en el sistema");
+            }
 
-            await _unitOfWork.CartItemRepository.DeleteAsync(item);
+            await _unitOfWork.CartItemRepository.RemoveAsync(cartItem);
             await _unitOfWork.SaveChangeAsync();
         }
     }

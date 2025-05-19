@@ -55,7 +55,7 @@ namespace APITaller1.src.Repositories
             var items = await _context.CartItems
                 .Where(ci => ci.ShoppingCartID == cartId)
                 .ToListAsync();
-                
+
             _context.CartItems.RemoveRange(items);
             await _context.SaveChangesAsync();
         }
@@ -63,6 +63,12 @@ namespace APITaller1.src.Repositories
         public void RemoveRange(IEnumerable<CartItem> cartItems)
         {
             _context.CartItems.RemoveRange(cartItems);
+        }
+        
+        public async Task RemoveAsync(CartItem cartItem)
+        {
+            _context.CartItems.Remove(cartItem);
+            await _context.SaveChangesAsync();
         }
     }
 }

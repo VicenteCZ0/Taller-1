@@ -20,9 +20,8 @@ namespace APITaller1.src.Services
             _logger = logger;
         }
 
-        public async Task<Order> CreateOrderAsync(int userId)
+        public async Task<OrderDto> CreateOrderAsync(int userId)
         {
-            // Iniciar transacción
             await using var transaction = await _unitOfWork.BeginTransactionAsync();
             
             try
@@ -31,24 +30,24 @@ namespace APITaller1.src.Services
                 var cart = await _unitOfWork.ShoppingCartRepository
                     .GetByUserIdWithItemsAndProductsAsync(userId);
                 
-                if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
+                if (cart == null)
                 {
-                    throw new InvalidOperationException("No hay productos en el carrito.");
+                    throw new InvalidOperationException($"No se encontró carrito para el usuario {userId}");
                 }
 
-                // 2. Verificar que todos los productos existan
-                var missingProductIds = cart.CartItems
+                // 2. Verificar productos
+                var missingProducts = cart.CartItems
                     .Where(item => item.Product == null)
                     .Select(item => item.ProductID)
                     .ToList();
                     
-                if (missingProductIds.Any())
+                if (missingProducts.Any())
                 {
                     throw new InvalidOperationException(
-                        $"Los siguientes productos no existen: {string.Join(", ", missingProductIds)}");
+                        $"Productos no encontrados: {string.Join(", ", missingProducts)}");
                 }
 
-                // 3. Crear la orden y sus items
+                // 3. Crear la entidad Order
                 var order = new Order
                 {
                     UserId = userId,
@@ -60,23 +59,24 @@ namespace APITaller1.src.Services
                         ProductID = item.ProductID,
                         Quantity = item.Quantity,
                         UnitPrice = item.Product.Price,
-                        Product = item.Product // Asignar la navegación
+                        Product = item.Product
                     }).ToList()
                 };
 
-                // 4. Guardar la orden (esto guardará en cascada los OrderItems)
+                // 4. Guardar la orden
                 await _unitOfWork.OrderRepository.AddAsync(order);
                 
                 // 5. Limpiar el carrito
-                _unitOfWork.CartItemRepository.RemoveRange(cart.CartItems);
+                await _unitOfWork.CartItemRepository.ClearCartAsync(cart.ID);
                 
-                // 6. Guardar todos los cambios
+                // 6. Guardar cambios
                 await _unitOfWork.SaveChangeAsync();
                 
                 // 7. Confirmar transacción
                 await transaction.CommitAsync();
                 
-                return order;
+                // 8. Mapear a DTO
+                return MapToOrderDto(order);
             }
             catch (Exception ex)
             {
@@ -85,11 +85,10 @@ namespace APITaller1.src.Services
                 throw;
             }
         }
-        public async Task<List<OrderDto>> GetOrdersByUserAsync(int userId)
-        {
-            var orders = await _unitOfWork.OrderRepository.GetByUserAsync(userId);
 
-            return orders.Select(order => new OrderDto
+        private OrderDto MapToOrderDto(Order order)
+        {
+            return new OrderDto
             {
                 OrderId = order.ID,
                 CreatedAt = order.CreatedAt,
@@ -98,11 +97,18 @@ namespace APITaller1.src.Services
                 Items = order.OrderItems.Select(oi => new OrderItemDto
                 {
                     ProductId = oi.ProductID,
-                    ProductName = oi.Product.Name,
+                    ProductName = oi.Product?.Name ?? "Producto no disponible",
                     Quantity = oi.Quantity,
                     UnitPrice = oi.UnitPrice
                 }).ToList()
-            }).ToList();
+            };
+        }
+
+
+        public async Task<List<OrderDto>> GetOrdersByUserAsync(int userId)
+        {
+            var orders = await _unitOfWork.OrderRepository.GetByUserAsync(userId);
+            return orders.Select(MapToOrderDto).ToList();
         }
 
     }

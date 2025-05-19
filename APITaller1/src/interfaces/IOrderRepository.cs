@@ -9,7 +9,7 @@ namespace APITaller1.src.interfaces
 {
     public interface IOrderRepository
     {
-        Task<IEnumerable<Order>> GetByUserAsync(int userId);
+        Task<List<Order>> GetByUserAsync(int userId);
         Task<Order?> GetByIdAsync(int orderId);
         Task AddAsync(Order order);
     }
