@@ -22,19 +22,18 @@ public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
     public DbSet<ProductImage> ProductImages { get; set; }
     public DbSet<ShoppingCart> ShoppingCarts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
-
-/*
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     
-    
-    
-
-*/
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<User>()
+        .HasOne(u => u.ShippingAddress)
+        .WithOne(a => a.User)
+        .HasForeignKey<ShippingAddress>(a => a.UserId)
+        .IsRequired(false); // Permite que un usuario no tenga dirección
 
         // Configurar relación User - ShippingAddres (uno a muchos)
         modelBuilder.Entity<ShippingAddress>(entity =>
@@ -47,59 +46,52 @@ public class StoreContext : IdentityDbContext<User, IdentityRole<int>, int>
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        /*
-
-        // Configurar relación User - Order (uno a muchos)
         modelBuilder.Entity<Order>()
-            .HasOne<User>()
-            .WithMany()
-            .HasForeignKey(o => o.UserId);
+            .HasOne(o => o.User)
+            .WithMany(u => u.Orders)
+            .HasForeignKey(o => o.UserId)
+            .OnDelete(DeleteBehavior.Cascade); 
 
-        // Configurar relación Order - OrderItem (uno a muchos)
         modelBuilder.Entity<OrderItem>()
-            .HasOne<Order>()
+            .HasOne(oi => oi.Product)
             .WithMany()
-            .HasForeignKey(oi => oi.OrderId);
+            .HasForeignKey(oi => oi.ProductID)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        // Configurar relación Product - OrderItem (uno a muchos)
+        
         modelBuilder.Entity<OrderItem>()
             .HasOne<Product>()
             .WithMany()
-            .HasForeignKey(oi => oi.ProductId);
+            .HasForeignKey(oi => oi.ProductID);
 
-        // Configurar relación User - ShoppingCart (uno a muchos)
         modelBuilder.Entity<ShoppingCart>()
-            .HasOne<User>()
-            .WithMany()
-            .HasForeignKey(sc => sc.UserId);
+            .HasOne(sc => sc.User)
+            .WithOne(u => u.ShoppingCart)
+            .HasForeignKey<ShoppingCart>(sc => sc.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        // Configurar relación ShoppingCart - CartItem (uno a muchos)
         modelBuilder.Entity<CartItem>()
-            .HasOne<ShoppingCart>()
-            .WithMany()
-            .HasForeignKey(ci => ci.ShoppingCartId);
+            .HasOne(ci => ci.ShoppingCart)
+            .WithMany(sc => sc.CartItems)
+            .HasForeignKey(ci => ci.ShoppingCartID)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        // Configurar relación Product - CartItem (uno a muchos)
         modelBuilder.Entity<CartItem>()
-            .HasOne<Product>()
-            .WithMany()
-            .HasForeignKey(ci => ci.ProductId);
+            .HasOne(ci => ci.Product)
+            .WithMany() 
+            .HasForeignKey(ci => ci.ProductID)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        */
-
-
-        // Configurar relación Product - ProductImage (uno a muchos)
         modelBuilder.Entity<ProductImage>(entity =>
         {
-            entity.HasKey(pi => pi.ImageID);  // Definir explícitamente la clave primaria
+            entity.HasKey(pi => pi.ImageID);  
             
             entity.HasOne(pi => pi.Product)
-                .WithMany(p => p.ProductImages)  // Asume que añadirás esta propiedad a Product
-                .HasForeignKey(pi => pi.ProductID)  // Usar ProductID, no ImageID
+                .WithMany(p => p.ProductImages)  
+                .HasForeignKey(pi => pi.ProductID)  
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Configurar relación Product - Status (uno a muchos)
         modelBuilder.Entity<Product>()
             .HasOne(p => p.Status)
             .WithMany()

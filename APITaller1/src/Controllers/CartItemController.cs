@@ -10,9 +10,9 @@ using System.Security.Claims;
 
 namespace APITaller1.src.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-
     public class CartItemController : ControllerBase
     {
         private readonly CartItemService _cartItemService;
@@ -30,6 +30,14 @@ namespace APITaller1.src.Controllers
             return Ok(items);
         }
 
+        [HttpGet("total")]
+        public async Task<IActionResult> GetCartTotal()
+        {
+            var userId = GetUserIdFromClaims();
+            var total = await _cartItemService.GetCartTotalAsync(userId);
+            return Ok(new { total });
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddItem([FromBody] CartItemCreationDto body)
         {
@@ -42,8 +50,15 @@ namespace APITaller1.src.Controllers
         public async Task<IActionResult> UpdateQuantity(int productId, [FromBody] int quantity)
         {
             var userId = GetUserIdFromClaims();
-            await _cartItemService.UpdateQuantityAsync(userId, productId, quantity);
-            return Ok(new { message = "Cantidad actualizada" });
+            try
+            {
+                await _cartItemService.UpdateQuantityAsync(userId, productId, quantity);
+                return Ok(new { message = "Cantidad actualizada" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpDelete("{productId}")]
@@ -58,11 +73,10 @@ namespace APITaller1.src.Controllers
         {
             var claim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub");
             if (claim == null)
-            {
-                // TEMPORAL para pruebas sin JWT
-                return 1; // o cualquier ID de usuario válido
-            }
+                throw new UnauthorizedAccessException("No se pudo obtener el ID del usuario desde el token.");
+
             return int.Parse(claim.Value);
         }
+
     }
 }

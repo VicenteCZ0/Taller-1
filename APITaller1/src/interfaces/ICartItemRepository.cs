@@ -11,4 +11,7 @@ public interface ICartItemRepository
     Task AddAsync(CartItem item);
     Task UpdateAsync(CartItem item);
     Task DeleteAsync(CartItem item);
+    void RemoveRange(IEnumerable<CartItem> cartItems);
+    Task ClearCartAsync(int cartId);
+    Task RemoveAsync(CartItem cartItem);
 }

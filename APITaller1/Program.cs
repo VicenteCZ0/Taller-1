@@ -10,11 +10,14 @@ using APITaller1.src.interfaces;
 using APITaller1.src.Repositories;
 using APITaller1.src.Services;
 using APITaller1.src.models;
+using APITaller1.src.middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 
 // Establecer URLs de escucha
-builder.WebHost.UseUrls("https://localhost:7283", "http://localhost:5000");
+builder.WebHost.UseUrls("https://localhost:7283");
 
 // Configurar Serilog
 Log.Logger = new LoggerConfiguration()
@@ -65,12 +68,18 @@ try
     builder.Services.AddScoped<IProductRepository, ProductRepository>();
     builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
     builder.Services.AddScoped<IStatusRepository, StatusRepository>();
+    builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
     builder.Services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
     builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+    builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+    builder.Services.AddScoped<IPhotoService, PhotoService>();
+    builder.Services.AddScoped<OrderService>();
+    builder.Services.AddTransient<ExceptionMiddleware>();
 
     // Servicios adicionales
     builder.Services.AddScoped<CartItemService>();
     builder.Services.AddScoped<TokenService>();
+    builder.Services.AddScoped<PdfService, PdfService>();
 
     // Unit of Work
     builder.Services.AddScoped<UnitOfWork>();
@@ -102,6 +111,7 @@ try
 
     app.UseHttpsRedirection();
     app.UseRouting();
+    app.UseMiddleware<ExceptionMiddleware>();
 
     // CORS 
     app.UseCors(builder => builder

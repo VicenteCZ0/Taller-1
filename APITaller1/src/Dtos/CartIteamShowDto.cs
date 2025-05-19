@@ -13,5 +13,7 @@ namespace APITaller1.src.Dtos
         public int Quantity { get; set; }
 
         public decimal Subtotal => UnitPrice * Quantity;
+
+        public string? ProductImageUrl { get; set; }
     }
 }

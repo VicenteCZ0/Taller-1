@@ -19,5 +19,7 @@ namespace APITaller1.src.interfaces
         void UpdateShippingAddressAsync(int userId, ShippingAddressDto shippingAddressDto);
         void DeleteUserAsync(User user);
         Task<bool> SaveChangesAsync();
+
+        Task<User> GetUserWithShippingAddressAsync(int userId);
     }
 }

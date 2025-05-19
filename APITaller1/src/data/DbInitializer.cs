@@ -56,7 +56,7 @@ public class DbInitializer
                 AccountStatus = true,
                 LastLogin = DateTime.Now
             };
-            var result = await userManager.CreateAsync(admin, "Pa$word2025");
+            var result = await userManager.CreateAsync(admin, "Pa$$word2025");
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(admin, "Admin");
@@ -166,40 +166,98 @@ public class DbInitializer
             context.ProductImages.Add(image);
         }
 
-        await context.SaveChangesAsync();
-        
+        var productsList = await context.Products.ToListAsync();
 
         foreach (var user in context.Users)
         {
-            var existingCart = await context.ShoppingCarts.FirstOrDefaultAsync(c => c.UserID == user.Id);
+            var existingCart = await context.ShoppingCarts.FirstOrDefaultAsync(c => c.UserId == user.Id);
             if (existingCart == null)
             {
                 var cart = new ShoppingCart
                 {
-                    UserID = user.Id,
-                    CartItems = new List<CartItem>()
+                    UserId = user.Id,
+                    User = user
                 };
+                user.ShoppingCart = cart;
 
-                // Elegir 3 productos aleatorios para agregar al carrito
-                var productsList = await context.Products.ToListAsync();
+                context.ShoppingCarts.Add(cart);
+                await context.SaveChangesAsync();
+                
                 var randomProducts = productsList.OrderBy(p => Guid.NewGuid()).Take(3).ToList();
-
 
                 foreach (var product in randomProducts)
                 {
-                    cart.CartItems.Add(new CartItem
+                    context.CartItems.Add(new CartItem
                     {
+                        ShoppingCartID = cart.ID,
                         ProductID = product.ProductID,
                         Quantity = 1
                     });
                 }
-
-                context.ShoppingCarts.Add(cart);
             }
         }
-
         await context.SaveChangesAsync();
 
+        // Verificar si ya existen órdenes
+        if (!context.Orders.Any())
+        {
+            var users = await context.Users.ToListAsync();
+            var productsListForOrders = await context.Products.ToListAsync();
+            var faker = new Faker("es");
+
+            // Generar órdenes para cada usuario
+            foreach (var user in users)
+            {
+                // Cada usuario tendrá entre 1 y 3 órdenes
+                var orderCount = faker.Random.Int(1, 3);
+                
+                for (int i = 0; i < orderCount; i++)
+                {
+                    var order = new Order
+                    {
+                        UserId = user.Id,
+                        User = user,
+                        CreatedAt = faker.Date.Between(DateTime.Now.AddMonths(-6), DateTime.Now),
+                        Status = faker.PickRandom(new[] { "Pending", "Processing", "Shipped", "Delivered", "Cancelled" }),
+                        TotalAmount = 0 
+                    };
+
+                    context.Orders.Add(order);
+                    await context.SaveChangesAsync(); 
+
+                    // Generar entre 1 y 5 items por orden
+                    var itemCount = faker.Random.Int(1, 5);
+                    var selectedProducts = productsListForOrders.OrderBy(p => Guid.NewGuid()).Take(itemCount).ToList();
+                    
+                    decimal orderTotal = 0;
+
+                    foreach (var product in selectedProducts)
+                    {
+                        var quantity = faker.Random.Int(1, 3);
+                        var unitPrice = product.Price;
+                        var itemTotal = quantity * unitPrice;
+                        orderTotal += itemTotal;
+
+                        var orderItem = new OrderItem
+                        {
+                            OrderID = order.ID,
+                            Order = order,
+                            ProductID = product.ProductID,
+                            Product = product,
+                            Quantity = quantity,
+                            UnitPrice = unitPrice
+                        };
+
+                        context.OrderItems.Add(orderItem);
+                    }
+
+                    order.TotalAmount = orderTotal;
+                    context.Orders.Update(order);
+                }
+            }
+
+            await context.SaveChangesAsync();
+        }
 
 
     }

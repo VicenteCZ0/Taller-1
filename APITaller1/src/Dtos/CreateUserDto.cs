@@ -37,7 +37,6 @@ namespace APITaller1.src.Dtos
         [Required(ErrorMessage = "Debe especificar un rol.")]
         public int RoleID { get; set; }
         
-        // Agregar la propiedad DateOfBirth que faltaba
         [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
         public DateTime DateOfBirth { get; set; }
         

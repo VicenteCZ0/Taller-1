@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using APITaller1.src.data;
 using APITaller1.src.interfaces;
 using APITaller1.src.models;
@@ -58,6 +57,18 @@ namespace APITaller1.src.Repositories
                 .ToListAsync();
 
             _context.CartItems.RemoveRange(items);
+            await _context.SaveChangesAsync();
+        }
+
+        public void RemoveRange(IEnumerable<CartItem> cartItems)
+        {
+            _context.CartItems.RemoveRange(cartItems);
+        }
+        
+        public async Task RemoveAsync(CartItem cartItem)
+        {
+            _context.CartItems.Remove(cartItem);
+            await _context.SaveChangesAsync();
         }
     }
 }
