@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using APITaller1.src.interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace APITaller1.src.data
 {
@@ -13,6 +14,9 @@ namespace APITaller1.src.data
         public IStatusRepository StatusRepository { get; }
         public IShoppingCartRepository ShoppingCartRepository { get; }
         public ICartItemRepository CartItemRepository { get; }
+        public IOrderRepository OrderRepository { get; }
+        public IOrderItemRepository OrderItemRepository { get; }
+
 
         public UnitOfWork(
             StoreContext context,
@@ -21,7 +25,10 @@ namespace APITaller1.src.data
             IProductImageRepository productImageRepository,
             IStatusRepository statusRepository,
             IShoppingCartRepository shoppingCartRepository,
-            ICartItemRepository cartItemRepository
+            ICartItemRepository cartItemRepository,
+            IOrderRepository orderRepository,
+            IOrderItemRepository orderItemRepository
+
         )
         {
             _context = context;
@@ -31,11 +38,18 @@ namespace APITaller1.src.data
             StatusRepository = statusRepository;
             ShoppingCartRepository = shoppingCartRepository;
             CartItemRepository = cartItemRepository;
+            OrderRepository = orderRepository;
+            OrderItemRepository = orderItemRepository;
         }
 
         public async Task<int> SaveChangeAsync()
         {
             return await _context.SaveChangesAsync();
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _context.Database.BeginTransactionAsync();
         }
     }
 }

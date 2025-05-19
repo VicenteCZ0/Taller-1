@@ -11,7 +11,7 @@ using APITaller1.src.models;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace APITaller1.src.data;
+namespace APITaller1.src.Repositories;
 
 public class ShoppingCartRepository : IShoppingCartRepository
 {
@@ -23,12 +23,12 @@ public class ShoppingCartRepository : IShoppingCartRepository
     }
 
     public async Task<ShoppingCart?> GetByUserIdAsync(int userId)
-{
-    return await _context.ShoppingCarts
-    .Include(sc => sc.CartItems)
-    .ThenInclude(ci => ci.Product)
-    .FirstOrDefaultAsync(sc => sc.UserID == userId); 
-}
+    {
+        return await _context.ShoppingCarts
+        .Include(sc => sc.CartItems)
+        .ThenInclude(ci => ci.Product)
+        .FirstOrDefaultAsync(sc => sc.UserId == userId);
+    }
 
 
     public async Task<ShoppingCart> GetOrCreateCartAsync(int userId)
@@ -37,10 +37,10 @@ public class ShoppingCartRepository : IShoppingCartRepository
 
         if (cart == null)
         {
-            
+
             cart = new ShoppingCart
             {
-                UserID = userId,
+                UserId = userId,
                 CartItems = new List<CartItem>()
             };
 
@@ -55,4 +55,14 @@ public class ShoppingCartRepository : IShoppingCartRepository
     {
         await _context.ShoppingCarts.AddAsync(cart);
     }
+    
+
+    public async Task<ShoppingCart> GetByUserIdWithItemsAndProductsAsync(int userId)
+    {
+        return await _context.ShoppingCarts
+            .Include(sc => sc.CartItems)
+                .ThenInclude(ci => ci.Product)
+            .FirstOrDefaultAsync(sc => sc.UserId == userId);
+    }
+
 }

@@ -41,6 +41,64 @@ namespace APITaller1.Migrations
                     b.ToTable("CartItems");
                 });
 
+            modelBuilder.Entity("APITaller1.src.models.Order", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("APITaller1.src.models.OrderItem", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("OrderID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ProductID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ProductID1")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("OrderID");
+
+                    b.HasIndex("ProductID");
+
+                    b.HasIndex("ProductID1");
+
+                    b.ToTable("OrderItems");
+                });
+
             modelBuilder.Entity("APITaller1.src.models.Product", b =>
                 {
                     b.Property<int>("ProductID")
@@ -145,12 +203,13 @@ namespace APITaller1.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("UserID")
+                    b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("ShoppingCarts");
                 });
@@ -393,7 +452,7 @@ namespace APITaller1.Migrations
                     b.HasOne("APITaller1.src.models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("APITaller1.src.models.ShoppingCart", "ShoppingCart")
@@ -405,6 +464,42 @@ namespace APITaller1.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("ShoppingCart");
+                });
+
+            modelBuilder.Entity("APITaller1.src.models.Order", b =>
+                {
+                    b.HasOne("APITaller1.src.models.User", "User")
+                        .WithMany("Orders")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("APITaller1.src.models.OrderItem", b =>
+                {
+                    b.HasOne("APITaller1.src.models.Order", "Order")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("APITaller1.src.models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("APITaller1.src.models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductID1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("APITaller1.src.models.Product", b =>
@@ -443,8 +538,8 @@ namespace APITaller1.Migrations
             modelBuilder.Entity("APITaller1.src.models.ShoppingCart", b =>
                 {
                     b.HasOne("APITaller1.src.models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID")
+                        .WithOne("ShoppingCart")
+                        .HasForeignKey("APITaller1.src.models.ShoppingCart", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -502,6 +597,11 @@ namespace APITaller1.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("APITaller1.src.models.Order", b =>
+                {
+                    b.Navigation("OrderItems");
+                });
+
             modelBuilder.Entity("APITaller1.src.models.Product", b =>
                 {
                     b.Navigation("ProductImages");
@@ -514,7 +614,11 @@ namespace APITaller1.Migrations
 
             modelBuilder.Entity("APITaller1.src.models.User", b =>
                 {
+                    b.Navigation("Orders");
+
                     b.Navigation("ShippingAddress");
+
+                    b.Navigation("ShoppingCart");
                 });
 #pragma warning restore 612, 618
         }

@@ -17,7 +17,8 @@ namespace APITaller1.src.models
         public bool AccountStatus { get; set; }
         public string? DeactivationReason { get; set; }
         public DateTime DateOfBirth { get; set; }
-        
+        public ShoppingCart? ShoppingCart { get; set; }
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
         
         // Navigation property to ShippingAddress
         public ShippingAddress? ShippingAddress { get; set; }
