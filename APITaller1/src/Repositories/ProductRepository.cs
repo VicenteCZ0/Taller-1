@@ -166,4 +166,15 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products.AnyAsync(p => p.ProductID == productId);
     }
+
+
+    public async Task<bool> HasOrdersAsync(int productId)
+    {
+        return await _context.OrderItems.AnyAsync(oi => oi.ProductID == productId);
+    }
+
+    public void Remove(Product product)
+    {
+        _context.Products.Remove(product);
+    }
 }

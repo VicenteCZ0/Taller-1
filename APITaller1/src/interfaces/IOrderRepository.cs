@@ -12,5 +12,8 @@ namespace APITaller1.src.interfaces
         Task<List<Order>> GetByUserAsync(int userId);
         Task<Order?> GetByIdAsync(int orderId);
         Task AddAsync(Order order);
+
+        Task<List<Order>> GetByUserWithFiltersAsync(int userId, DateTime? fromDate, DateTime? toDate, decimal? minTotal, decimal? maxTotal);
+
     }
 }

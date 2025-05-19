@@ -38,5 +38,30 @@ namespace APITaller1.src.Repositories
         {
             await _context.Orders.AddAsync(order);
         }
+
+
+        public async Task<List<Order>> GetByUserWithFiltersAsync(int userId, DateTime? fromDate, DateTime? toDate, decimal? minTotal, decimal? maxTotal)
+        {
+            var query = _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Where(o => o.UserId == userId)
+                .AsQueryable();
+
+            if (fromDate.HasValue)
+                query = query.Where(o => o.CreatedAt >= fromDate.Value);
+
+            if (toDate.HasValue)
+                query = query.Where(o => o.CreatedAt <= toDate.Value);
+
+            if (minTotal.HasValue)
+                query = query.Where(o => o.TotalAmount >= minTotal.Value);
+
+            if (maxTotal.HasValue)
+                query = query.Where(o => o.TotalAmount <= maxTotal.Value);
+
+            return await query.ToListAsync();
+        }
+
     }
 }

@@ -15,10 +15,12 @@ namespace APITaller1.src.Controllers
     public class OrderController : ControllerBase
     {
         private readonly OrderService _orderService;
+        private readonly PdfService _pdfService;
 
-        public OrderController(OrderService orderService)
+        public OrderController(OrderService orderService, PdfService pdfService)
         {
             _orderService = orderService;
+            _pdfService = pdfService;
         }
 
         [HttpPost]
@@ -47,5 +49,30 @@ namespace APITaller1.src.Controllers
             }
             return int.Parse(claim.Value);
         }
+
+        [HttpPost("filter")]
+        [Authorize]
+        public async Task<ActionResult<List<OrderDto>>> FilterOrders([FromBody] OrderFilterDto filter)
+        {
+            var userId = GetUserIdFromClaims();
+            var orders = await _orderService.GetFilteredOrdersAsync(userId, filter);
+            return Ok(orders);
+        }
+
+        [HttpGet("{id}/pdf")]
+        [Authorize]
+        public async Task<IActionResult> DownloadOrderPdf(int id)
+        {
+            var userId = GetUserIdFromClaims();
+            var order = await _orderService.GetOrderByIdAsync(userId, id);
+
+            if (order == null)
+                return NotFound("Pedido no encontrado.");
+
+            var pdfBytes = _pdfService.GenerateOrderPdf(order);
+
+            return File(pdfBytes, "application/pdf", $"pedido_{id}.pdf");
+        }
+
     }
 }

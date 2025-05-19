@@ -12,6 +12,8 @@ using APITaller1.src.Services;
 using APITaller1.src.models;
 
 var builder = WebApplication.CreateBuilder(args);
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 
 // Establecer URLs de escucha
 builder.WebHost.UseUrls("https://localhost:7283");
@@ -75,6 +77,7 @@ try
     // Servicios adicionales
     builder.Services.AddScoped<CartItemService>();
     builder.Services.AddScoped<TokenService>();
+    builder.Services.AddScoped<PdfService, PdfService>();
 
     // Unit of Work
     builder.Services.AddScoped<UnitOfWork>();

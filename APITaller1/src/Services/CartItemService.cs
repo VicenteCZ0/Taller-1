@@ -62,6 +62,12 @@ namespace APITaller1.src.Services
                 .GetByCartAndProductAsync(cart.ID, productId);
             if (item == null) throw new Exception("Producto no encontrado en el carrito");
 
+            // Validación de stock
+            var product = await _unitOfWork.ProductRepository.GetByIdAsync(productId);
+            if (product == null) throw new Exception("Producto no existe");
+            if (quantity > product.Stock)
+                throw new Exception("La cantidad solicitada excede el stock disponible");
+
             item.Quantity = quantity;
             await _unitOfWork.CartItemRepository.UpdateAsync(item);
             await _unitOfWork.SaveChangeAsync();
@@ -71,25 +77,35 @@ namespace APITaller1.src.Services
         {
             var cart = await _unitOfWork.ShoppingCartRepository
                 .GetByUserIdWithItemsAsync(userId);
-            
+
             if (cart?.CartItems == null || !cart.CartItems.Any())
             {
                 throw new Exception("El carrito está vacío");
             }
 
             var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductID == productId);
-            
+
             if (cartItem == null)
             {
                 // Verificar si el producto existe
                 var productExists = await _unitOfWork.ProductRepository.Exists(productId);
-                throw new Exception(productExists 
+                throw new Exception(productExists
                     ? $"El producto {productId} no está en tu carrito"
                     : $"El producto {productId} no existe en el sistema");
             }
 
             await _unitOfWork.CartItemRepository.RemoveAsync(cartItem);
             await _unitOfWork.SaveChangeAsync();
+
+        }
+        
+        public async Task<decimal> GetCartTotalAsync(int userId)
+        {   
+            var cart = await _unitOfWork.ShoppingCartRepository.GetByUserIdAsync(userId);
+            if (cart == null) throw new Exception("Carrito no encontrado");
+
+            var items = await _unitOfWork.CartItemRepository.GetByCartIdAsync(cart.ID);
+            return items.Sum(i => i.Product.Price * i.Quantity);
         }
     }
 }

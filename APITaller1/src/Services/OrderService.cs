@@ -23,13 +23,13 @@ namespace APITaller1.src.Services
         public async Task<OrderDto> CreateOrderAsync(int userId)
         {
             await using var transaction = await _unitOfWork.BeginTransactionAsync();
-            
+
             try
             {
                 // 1. Obtener el carrito con items y productos
                 var cart = await _unitOfWork.ShoppingCartRepository
                     .GetByUserIdWithItemsAndProductsAsync(userId);
-                
+
                 if (cart == null)
                 {
                     throw new InvalidOperationException($"No se encontró carrito para el usuario {userId}");
@@ -40,7 +40,7 @@ namespace APITaller1.src.Services
                     .Where(item => item.Product == null)
                     .Select(item => item.ProductID)
                     .ToList();
-                    
+
                 if (missingProducts.Any())
                 {
                     throw new InvalidOperationException(
@@ -65,16 +65,16 @@ namespace APITaller1.src.Services
 
                 // 4. Guardar la orden
                 await _unitOfWork.OrderRepository.AddAsync(order);
-                
+
                 // 5. Limpiar el carrito
                 await _unitOfWork.CartItemRepository.ClearCartAsync(cart.ID);
-                
+
                 // 6. Guardar cambios
                 await _unitOfWork.SaveChangeAsync();
-                
+
                 // 7. Confirmar transacción
                 await transaction.CommitAsync();
-                
+
                 // 8. Mapear a DTO
                 return MapToOrderDto(order);
             }
@@ -110,6 +110,25 @@ namespace APITaller1.src.Services
             var orders = await _unitOfWork.OrderRepository.GetByUserAsync(userId);
             return orders.Select(MapToOrderDto).ToList();
         }
+
+        public async Task<List<OrderDto>> GetFilteredOrdersAsync(int userId, OrderFilterDto filter)
+        {
+            var orders = await _unitOfWork.OrderRepository
+                .GetByUserWithFiltersAsync(userId, filter.FromDate, filter.ToDate, filter.MinTotal, filter.MaxTotal);
+
+            return orders.Select(MapToOrderDto).ToList();
+        }
+        
+        public async Task<OrderDto?> GetOrderByIdAsync(int userId, int orderId)
+        {
+            var order = await _unitOfWork.OrderRepository.GetByIdAsync(orderId);
+
+            if (order == null || order.UserId != userId)
+                return null;
+
+            return MapToOrderDto(order);
+        }
+
 
     }
 }

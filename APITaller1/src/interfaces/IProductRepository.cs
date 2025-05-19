@@ -14,6 +14,8 @@ namespace APITaller1.src.interfaces
         Task DeleteProductAsync(Product product);
         Task UpdateProductAsync(Product product);
 
+        Task<bool> HasOrdersAsync(int productId);
+
         // Métodos adicionales opcionales:
         Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category);
         Task<IEnumerable<Product>> SearchProductsByNameAsync(string keyword);
@@ -27,6 +29,8 @@ namespace APITaller1.src.interfaces
         Task<Product?> GetByIdAsync(int id);
 
         Task<bool> Exists(int productId);
+
+        void Remove(Product product);
 
     }
 }

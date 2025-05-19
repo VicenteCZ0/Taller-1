@@ -117,17 +117,16 @@ public class ProductController : ControllerBase
         var product = await _unitOfWork.ProductRepository.GetByIdAsync(id);
         if (product == null) return NotFound();
 
-/*
         bool hasOrders = await _unitOfWork.ProductRepository.HasOrdersAsync(id);
         if (hasOrders)
         {
-            product.StatusID = 3; // Estado "oculto" o similar
+            product.StatusID = 2; // Estado "oculto" o similar
         }
         else
         {
             _unitOfWork.ProductRepository.Remove(product);
         }
-*/
+
         await _unitOfWork.SaveChangeAsync();
         return NoContent();
     }

@@ -16,7 +16,8 @@ namespace APITaller1.src.Mappers
                 ProductID = item.ProductID,
                 ProductName = item.Product?.Name ?? "Producto desconocido",
                 UnitPrice = item.Product?.Price ?? 0,
-                Quantity = item.Quantity
+                Quantity = item.Quantity,
+                ProductImageUrl = item.Product?.ProductImages.FirstOrDefault()?.Url_Image
             };
         }
     }
