@@ -34,7 +34,7 @@ namespace APITaller1.src.Controllers
         }
 
         [HttpPost("users/detail")]
-        public async Task<IActionResult> GetUserById([FromBody] IdDto dto) // ← Usa IdDto aquí
+        public async Task<IActionResult> GetUserById([FromBody] IdDto dto) 
         {
             var user = await _userManager.Users
                 .Include(u => u.ShippingAddress)

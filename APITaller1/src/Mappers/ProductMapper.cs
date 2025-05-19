@@ -65,7 +65,6 @@ namespace APITaller1.src.Mappers
             product.Category = dto.Category;
             product.Brand = dto.Brand;
             product.StatusID = dto.StatusID;
-            // Nota: No se asignan las imágenes aquí, eso se hace aparte en el controlador
         }
     }
 }

@@ -24,8 +24,6 @@ namespace APITaller1.src.interfaces
         Task<PagedList<Product>> GetCatalogAsync(ProductQueryParams queryParams);
         Task<PagedList<Product>> GetAdminListAsync(AdminProductQueryParams queryParams);
         Task<Product?> GetByIdWithImagesAsync(int id);
-        //Task<bool> HasOrdersAsync(int productId);
-
         Task<Product?> GetByIdAsync(int id);
 
         Task<bool> Exists(int productId);

@@ -63,7 +63,6 @@ public class ProductRepository : IProductRepository
         existingProduct.Price = product.Price;
         existingProduct.Stock = product.Stock;
         existingProduct.Category = product.Category;
-        //existingProduct.Urls = product.Urls;
         existingProduct.Brand = product.Brand;
         existingProduct.StatusID = product.StatusID;
 
@@ -71,7 +70,6 @@ public class ProductRepository : IProductRepository
         await _context.SaveChangesAsync();
     }
 
-    // Métodos adicionales opcionales
 
     public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category)
     {
@@ -95,18 +93,11 @@ public class ProductRepository : IProductRepository
     public async Task<Product?> GetByIdWithImagesAsync(int id)
     {
         return await _context.Products
-            .Include(p => p.Status)        // Carga el Status
-            .Include(p => p.ProductImages) // Carga las imágenes
+            .Include(p => p.Status)       
+            .Include(p => p.ProductImages) 
             .FirstOrDefaultAsync(p => p.ProductID == id);
     }
 
-    /*
-        public async Task<bool> HasOrdersAsync(int productId)
-        {
-            return await _context.OrderItems.AnyAsync(o => o.ProductID == productId);
-        }
-
-    */
     public async Task<Product?> GetByIdAsync(int id)
     {
         return await _context.Products.FindAsync(id);
@@ -156,8 +147,6 @@ public class ProductRepository : IProductRepository
             .Include(p => p.ProductImages)
             .Include(p => p.Status)
             .AsQueryable();
-
-        // Puedes aplicar los mismos filtros que en el catálogo
 
         return await PagedList<Product>.CreateAsync(query, queryParams.PageNumber, queryParams.PageSize);
     }

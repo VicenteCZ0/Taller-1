@@ -9,6 +9,6 @@ namespace APITaller1.src.Dtos
         public string Category { get; set; } = null!;
         public string Brand { get; set; } = null!;
         public int StatusID { get; set; }
-        public List<IFormFile>? Images { get; set; } // Para subir múltiples imágenes
+        public List<IFormFile>? Images { get; set; }
     }
 }

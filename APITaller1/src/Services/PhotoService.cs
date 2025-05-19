@@ -63,8 +63,7 @@ namespace APITaller1.src.Services
         {
             var uploadResult = await AddPhotoAsync(file);
 
-            // ✅ Asegúrate de usar SecureUrl y convertirlo a string
-            return uploadResult.SecureUrl?.ToString(); // <-- Esto devuelve la URL como string
+            return uploadResult.SecureUrl?.ToString();
         }
 
         public async Task<bool> DeleteImageAsync(string publicId)

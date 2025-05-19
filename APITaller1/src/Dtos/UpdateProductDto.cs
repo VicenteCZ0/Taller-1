@@ -11,7 +11,7 @@ public class UpdateProductDto
     public int StatusID { get; set; }
     public List<IFormFile>? Images { get; set; }
 
-    public List<IFormFile>? NewImages { get; set; }  // Para subir nuevas imágenes
-    public List<int>? RemoveImageIds { get; set; }   // Para eliminar imágenes por ID
+    public List<IFormFile>? NewImages { get; set; }  
+    public List<int>? RemoveImageIds { get; set; }   
 
 }

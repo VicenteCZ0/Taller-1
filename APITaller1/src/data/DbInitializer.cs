@@ -173,7 +173,6 @@ public class DbInitializer
             var existingCart = await context.ShoppingCarts.FirstOrDefaultAsync(c => c.UserId == user.Id);
             if (existingCart == null)
             {
-                // Paso 1: Crear y guardar el carrito
                 var cart = new ShoppingCart
                 {
                     UserId = user.Id,
@@ -183,8 +182,6 @@ public class DbInitializer
 
                 context.ShoppingCarts.Add(cart);
                 await context.SaveChangesAsync();
-
-                // Paso 2: Crear ítems con el ShoppingCartID asignado
                 
                 var randomProducts = productsList.OrderBy(p => Guid.NewGuid()).Take(3).ToList();
 
@@ -222,11 +219,11 @@ public class DbInitializer
                         User = user,
                         CreatedAt = faker.Date.Between(DateTime.Now.AddMonths(-6), DateTime.Now),
                         Status = faker.PickRandom(new[] { "Pending", "Processing", "Shipped", "Delivered", "Cancelled" }),
-                        TotalAmount = 0 // Se calculará al añadir los items
+                        TotalAmount = 0 
                     };
 
                     context.Orders.Add(order);
-                    await context.SaveChangesAsync(); // Guardar para obtener el OrderID
+                    await context.SaveChangesAsync(); 
 
                     // Generar entre 1 y 5 items por orden
                     var itemCount = faker.Random.Int(1, 5);
@@ -254,7 +251,6 @@ public class DbInitializer
                         context.OrderItems.Add(orderItem);
                     }
 
-                    // Actualizar el total de la orden
                     order.TotalAmount = orderTotal;
                     context.Orders.Update(order);
                 }

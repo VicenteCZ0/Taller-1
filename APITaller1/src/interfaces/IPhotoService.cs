@@ -12,8 +12,8 @@ namespace APITaller1.src.interfaces
         Task<ImageUploadResult> AddPhotoAsync(IFormFile file);
         Task<DeletionResult> DeletePhotoAsync(string publicId);
 
-        Task<string> UploadImageAsync(IFormFile file); // devuelve URL
-        Task<bool> DeleteImageAsync(string publicId);  // elimina usando el publicId
+        Task<string> UploadImageAsync(IFormFile file); 
+        Task<bool> DeleteImageAsync(string publicId); 
 
     }
 }
