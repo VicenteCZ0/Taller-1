@@ -14,7 +14,7 @@ using APITaller1.src.models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Establecer URLs de escucha
-builder.WebHost.UseUrls("https://localhost:7283", "http://localhost:5000");
+builder.WebHost.UseUrls("https://localhost:7283");
 
 // Configurar Serilog
 Log.Logger = new LoggerConfiguration()
