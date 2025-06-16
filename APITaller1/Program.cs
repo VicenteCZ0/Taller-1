@@ -17,7 +17,9 @@ QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 
 // Establecer URLs de escucha
-builder.WebHost.UseUrls("https://localhost:7283");
+builder.WebHost.UseUrls("http://localhost:7283");
+
+
 
 // Configurar Serilog
 Log.Logger = new LoggerConfiguration()
@@ -81,6 +83,23 @@ try
     builder.Services.AddScoped<TokenService>();
     builder.Services.AddScoped<PdfService, PdfService>();
 
+
+    var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+    var corsMethods = builder.Configuration.GetSection("Cors:AllowedMethods").Get<string[]>();
+    var corsHeaders = builder.Configuration.GetSection("Cors:AllowedHeaders").Get<string[]>();
+
+
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("RestrictedCorsPolicy", policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") // EXACTO, sin slash
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
+    });
+
     // Unit of Work
     builder.Services.AddScoped<UnitOfWork>();
 
@@ -111,18 +130,13 @@ try
 
     app.UseHttpsRedirection();
     app.UseRouting();
-    app.UseMiddleware<ExceptionMiddleware>();
-
-    // CORS 
-    app.UseCors(builder => builder
-        .AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader());
-            
-    app.UseAuthentication(); 
+    app.UseCors("RestrictedCorsPolicy");
+    app.UseAuthentication();
     app.UseAuthorization();
 
-    app.MapControllers(); 
+    app.UseMiddleware<ExceptionMiddleware>();
+
+    app.MapControllers();
 
     // Verifica todas las rutas registradas (para debug)
     app.Map("/routes", appBuilder =>
