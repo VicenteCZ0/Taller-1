@@ -1,6 +1,4 @@
-Información del Equipo Integrante 1: Vicente Javier Figueroa Lazo, vicente.figueroa01@alumnos.ucn.cl, 21.536.417-8
 
-Integrante 2: Vicente Arnoldo Castro Zepeda, vicente.castro02@alumnos.ucn.cl, 21.448.750-0
 
  --Descripción del Proyecto--
 
